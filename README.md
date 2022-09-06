@@ -16,7 +16,7 @@ Currently an undergrad student in my senior year working towards my Bachelors in
 * Practiced version control using a remote repository through github
 * Our team used android studio for developing the app
 
-# [Currently working on]
+# Currently working on
 For my senior design, me any my team plan on making a social fishing app. 
 
 The app will allow users to input various details about their catch and upload it to the platform. Detailed input fields will include a picture of the fish, the weight, length, the location, species, bait used, date caught, etc. To make fishing more rewarding, our app will also include a mission and reward system. Users will have a menu on their profile that will display fishing related missions. The social feature is structured similar to how a forum works and serves as a way for users to get together as a community and talk about anything fish related. Users can create a new discussion post and other users can interact in the discussion.

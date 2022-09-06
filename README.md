@@ -1,6 +1,6 @@
 # William Sigala
 
-#Introduction
+# Introduction
 Currently an undergrad student in my senior year working towards my Bachelors in Computer Science. Topics I've recently been interested in include computer vision, AI, and machine learning. I have been focused in expanding my knowledge in these areas in the past year.
 
 # Projects
@@ -27,4 +27,4 @@ The app will allow users to input various details about their catch and upload i
 
 [Linked In](https://www.linkedin.com/in/william-sigala-89061424b/)
 
-![Resume](/content/resume.pdf)
+[Resume](/content/resume.pdf)

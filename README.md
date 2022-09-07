@@ -1,12 +1,12 @@
 # William Sigala
 
 # Introduction
-Currently an undergrad student in my senior year working towards my Bachelors in Computer Science. Topics I've recently been interested in include computer vision, AI, and machine learning. I have been focused in expanding my knowledge in these areas in the past year.
+I'm William Sigala, an undergraduate student in my senior year working towards my Bachelors in Computer Science. Topics I've recently been interested in include computer vision, AI, and machine learning. I have been focused in expanding my knowledge in these areas in the past year. When I'm not learning new things, I enjoy fishing and playing videogames.
 
 # Education
-B.S. in Computer Science, University of Texas at Arlington, expected graduation May 2023
-GPA: 3.5
-Notable Coursework:  Fundamentals of Computer Vision, Artificial Intelligence, Object Oriented Programming, Fundamentals of Software Engineering, and Operating Systems
+* B.S. in Computer Science, University of Texas at Arlington, expected graduation May 2023
+* GPA: 3.5
+* Notable Coursework:  Fundamentals of Computer Vision, Artificial Intelligence, Object Oriented Programming, Fundamentals of Software Engineering, and Operating Systems
 
 # Projects
 

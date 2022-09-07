@@ -29,7 +29,6 @@ The app will allow users to input various details about their catch and upload i
 * Languages: C, C++, Python, Javascript, Typescript, and Java 
 * Familiar with: HTML, CSS, ReactJS, NodeJS, Graphql, PostgreSQL, Linux, Git, Scrum/Agile methodologies, Qt, Jupyter, Opencv, Tensorflow, and Android Studio
 
-
-(https://brand.linkedin.com/content/dam/me/business/en-us/amp/brand-site/v2/bg/LI-Bug.svg.original.svg)(https://www.linkedin.com/in/william-sigala-89061424b/)
+![](/content/LI-In-Bug.png)(https://www.linkedin.com/in/william-sigala-89061424b/)
 
 [Resume](/content/resume.pdf)

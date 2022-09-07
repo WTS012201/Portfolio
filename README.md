@@ -1,7 +1,7 @@
 # William Sigala
 
 # Introduction
-I'm William Sigala, an undergraduate student in my senior year working towards my Bachelors in Computer Science. Topics I've recently been interested in include computer vision, AI, and machine learning. I have been focused in expanding my knowledge in these areas in the past year. When I'm not learning new things, I enjoy fishing and playing videogames.
+I'm William Sigala, an undergraduate student in my senior year working towards my Bachelors in Computer Science. Topics I've recently been interested in include computer vision, AI, and machine learning. I have been focused in expanding my knowledge in these areas in the past year. When I'm not learning new things, I enjoy fishing and playing video games.
 
 # Education
 * B.S. in Computer Science, University of Texas at Arlington, expected graduation May 2023

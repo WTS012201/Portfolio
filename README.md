@@ -3,6 +3,11 @@
 # Introduction
 Currently an undergrad student in my senior year working towards my Bachelors in Computer Science. Topics I've recently been interested in include computer vision, AI, and machine learning. I have been focused in expanding my knowledge in these areas in the past year.
 
+# Education
+B.S. in Computer Science, University of Texas at Arlington, expected graduation May 2023
+GPA: 3.5
+Notable Coursework:  Fundamentals of Computer Vision, Artificial Intelligence, Object Oriented Programming, Fundamentals of Software Engineering, and Operating Systems
+
 # Projects
 
 # [Project 1: Text Extraction Tool](https://github.com/WTS012201/Text-Extraction-Tool) 
@@ -27,7 +32,11 @@ The app will allow users to input various details about their catch and upload i
 
 # Skills
 * Languages: C, C++, Python, Javascript, Typescript, and Java 
-* Familiar with: HTML, CSS, ReactJS, NodeJS, Graphql, PostgreSQL, Linux, Git, Scrum/Agile methodologies, Qt, Jupyter, Opencv, Tensorflow, and Android Studio
+* Familiar with: HTML, CSS, ReactJS, NodeJS, Graphql, PostgreSQL, Linux, Git, Scrum/Agile methodologies, Qt, Jupyter, Opencv, Pointcloud, Tensorflow, and Android Studio
+
+# Contact
+* Email: wiltsig@gmail.com
+* Phone: 817-995-5909
 
 [Linked In](https://www.linkedin.com/in/william-sigala-89061424b/)
 

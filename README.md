@@ -18,6 +18,8 @@ Currently an undergrad student in my senior year working towards my Bachelors in
 * Practiced version control using a remote repository through github
 * Our team used android studio for developing the app
 
+![](/content/demo2.gif)
+
 # Currently working on
 For my senior design, me any my team plan on making a social fishing app. 
 

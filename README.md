@@ -10,6 +10,8 @@ Currently an undergrad student in my senior year working towards my Bachelors in
 * You can also remove or change the text in an image. (This feature is work in progress)
 * I used opencv with tesseract for OCR. I used Qt for the user interface
 
+![](/content/demo1.gif)
+
 # [Project 2: Fitness and Training App (FAT)](https://github.com/WTS012201/FAT-App) 
 * Worked with a team of five to create a fitness app for android
 * Used an agile development process by creating requirements, models and diagrams, coding, and making changes incrementally

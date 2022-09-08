@@ -1,7 +1,7 @@
 # William Sigala
 
 <p align="center">
-  <img src="/content/me.PNG" height="auto" width="300">
+  <img src="/content/me.PNG" height="auto" width="300" />
 </p>
 
 
@@ -21,7 +21,7 @@ I'm William Sigala, an undergraduate student in my senior year working towards m
 * I used opencv with tesseract for OCR. I used Qt for the user interface
 
 <p align="center">
-  <img src="/content/demo1.gif">
+  <img src="/content/demo1.gif" />
 </p>
 
 # [Project 2: Fitness and Training App (FAT)](https://github.com/WTS012201/FAT-App) 

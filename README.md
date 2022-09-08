@@ -1,7 +1,7 @@
 # William Sigala
 
 <p align="center">
-  <img src="/content/me.PNG">
+  <img src="/content/me.PNG" height="auto" width="300">
 </p>
 
 

@@ -10,7 +10,7 @@ I'm William Sigala, an undergraduate student in my senior year working towards m
 # Education
 * B.S. in Computer Science, University of Texas at Arlington, expected graduation May 2023
 * GPA: 3.5
-* Notable Coursework:  Fundamentals of Computer Vision, Artificial Intelligence, Object Oriented Programming, Fundamentals of Software Engineering, and Operating Systems
+* Notable Coursework:  Intro to Computer Vision, Artificial Intelligence, Object Oriented Programming, Intro to Software Engineering, and Operating Systems
 
 # Projects
 

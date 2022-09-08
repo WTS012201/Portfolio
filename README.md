@@ -1,6 +1,9 @@
 # William Sigala
 
-![](/content/me.PNG)
+<p align="center">
+  <img src="/content/me.PNG">
+</p>
+
 
 # Introduction
 I'm William Sigala, an undergraduate student in my senior year working towards my Bachelors in Computer Science. Topics I've recently been interested in include computer vision, AI, and machine learning. I have been focused in expanding my knowledge in these areas in the past year. When I'm not learning new things, I enjoy fishing and playing video games.
@@ -17,7 +20,9 @@ I'm William Sigala, an undergraduate student in my senior year working towards m
 * You can also remove or change the text in an image. (This feature is work in progress)
 * I used opencv with tesseract for OCR. I used Qt for the user interface
 
-![](/content/demo1.gif)
+<p align="center">
+  <img src="/content/demo1.gif">
+</p>
 
 # [Project 2: Fitness and Training App (FAT)](https://github.com/WTS012201/FAT-App) 
 * Worked with a team of five to create a fitness app for android

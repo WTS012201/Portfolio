@@ -1,4 +1,3 @@
 ---
-redirect:   /about/
-layout:     redirect
+redirect_to: /about/
 ---

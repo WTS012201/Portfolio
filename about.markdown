@@ -11,7 +11,7 @@ redirect_from: /Portfolio/
 
 # Introduction
 
-I'm an undergraduate student in my senior year working towards my Bachelors in Computer Science. I have a strong interest in computer vision and machine learning in computer vision. I have been focused in expanding my knowledge in these areas for the past year. I have some past experience with web development, both front and back end.
+I'm an undergraduate student in my senior year working towards my Bachelors in Computer Science. I have a strong interest in computer vision and machine learning in computer vision. I have been focused in expanding my knowledge in these areas for the past year.
 
 # Education
 
@@ -49,6 +49,6 @@ The app will allow users to input various details about their catch and upload i
 # Skills
 
 - Languages: C, C++, Python, Javascript, Typescript, and Java
-- Familiar with: HTML, CSS, ReactJS, NodeJS, Graphql, PostgreSQL, Linux, Git, Scrum/Agile methodologies, Qt, Jupyter, Opencv, Pointcloud, Tensorflow, PyTorch, and Android Studio
+- Familiar with: HTML, CSS, ReactJS, NodeJS, Graphql, PostgreSQL, Linux, Git, Scrum/Agile methodologies, Qt, Jupyter, OpenCV, Pointcloud, Tensorflow, PyTorch, and Android Studio
 
 [Resume](/content/resume.pdf)

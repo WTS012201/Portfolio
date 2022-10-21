@@ -14,7 +14,7 @@ Convolutional neural networks have played a critical role in solving image class
 ### **What is convolution?**
 It's important to understand the key component that drives convolutional neural networks and why it performs so well in image classification.
 
-The convolutional layer is the defining feature of this type of neural network. This layer is responsible for learning features that belong to a class. It accomplishes this by applying a filter (kernel) on the receptive fields (local regions) of the input image, resulting in a feature map. Mathematically, this operation is done by applying the element-wise product between all of the receptive fields and the kernel, then summing each element in the receptive field, and finally mapping the results to the feature map.
+The convolutional layer is the defining feature of this type of neural network. This layer is responsible for learning features that belong to a class. It accomplishes this by applying a filter (kernel) on the receptive fields (local regions) of the input image, resulting in a feature map. Mathematically, this operation is done by applying the element-wise product between all of the receptive fields and the kernel, then summing every element in each receptive field, and finally mapping the summed values to the feature map.
 
 For example:
 
@@ -166,7 +166,7 @@ These two components are essential for any convolutional network, so understandi
 I'll be demonstrating my attempt at CNNs with
 <a href="https://www.kaggle.com/datasets/maricinnamon/caltech101-airplanes-motorbikes-schooners">Caltech101 | Airplanes, Motorbikes & Schooners<a> 
 
-For the sake of brevity, I will only explain the code related towards the topic. The notebook is available <a href="https://github.com/WTS012201/CSE4334/blob/main/assignment2/eval.ipynb">Here<a> 
+For the sake of brevity, I will only explain the code segments related towards the topic and will not explain  code that has reappeared.  The notebook is available <a href="https://github.com/WTS012201/CSE4334/blob/main/assignment2/eval.ipynb">Here<a> 
 
 
 {% highlight ruby %}
@@ -190,6 +190,16 @@ classes = ["Motorcycle", "Airplane", "Schooner"]
 {% endhighlight %}
 
 ### **Data**
+
+Normalization helps get data within a range and reduces the skewness which helps learn faster and better. Normalization can also tackle the diminishing and exploding gradients problems.
+
+Normalizing the image data reduces the chance of vanishing & exploding gradients for the optimizer during training. To do this, calculate the mean $$\mu$$ and standard deviation $$\sigma$$ of each channel for every image in the dataset, then subtract each value by the mean and divide by the standard deviation.
+
+$$
+Z = \dfrac{x - \mu}{\sigma}
+$$
+
+PyTorch does the Normalization part for us
 
 {% highlight ruby %}
 # for simplicity, just normalize whole dataset instead of each class label
@@ -216,6 +226,8 @@ def norm_transforms():
     return norm, unnorm
 norm, unnorm = norm_transforms()
 {% endhighlight %}
+
+Since the number of images for schooner class is dramatically smaller than the other two classes in the dataset, I computed some weights to apply for the loss criterion during training by taking the difference of each portion by 1.
 
 {% highlight ruby %}
 import pandas as pd
@@ -251,6 +263,8 @@ Class_weights
 0.520    Motorcycle
 dtype: object
 {% endhighlight %}
+
+The next step is to apply the transformations (Resizing each image to the same size and normalizing) and split the dataset. I originally planned on doing **60/20/20** split for a train, validation, and test set. However, I found that a **20/20** split would be too small and since I was testing a variety of different networks in one go, I wouldn't need to do much tuning. Ultimately, I decided on a **60/40** split and commented out the former.
 
 {% highlight ruby %}
 def load_data():
@@ -325,6 +339,17 @@ class CNN(nn.Module):
         return self.classifier(self.net(x))
 {% endhighlight %}
 
+The way this network is structured can be explained by `gen_layers`. It takes in `num_layers`(the number of convolutional layers), and `expansion` which is a lambda expression used for expanding the number of feature maps from each conv layer. Each conv layer is followed by ReLU activation function, BatchNorm, and MaxPool. The sequence is stored in `self.net` on construction.
+
+`classifier` contains the fully connected layers that result in the model's prediction and is generated on construction.
+
+The `forward` pass throws the input through the sequence of conv layers in `self.net`, then passes the output from the `self.net` to the sequence of fully connected layers from `classifier` to get the prediction.
+
+Notice 
+{% highlight ruby %}fcl = ((IMG_SIZE // (2 ** num_layers)) ** 2) * in_channels{% endhighlight %}
+It represents the number of neurons in each feature map multiplied by the number of feature maps at the end of `gen_layers`. Recall that maintaining dimensionality of the feature maps  $$n_{in}$$ = $$n_{out}$$ makes computing this value convenient.
+
+
 ### Metrics for training
 
 {% highlight ruby %}
@@ -343,6 +368,8 @@ def eval(model, data):
 def count_params(model: nn.Module):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 {% endhighlight %}
+
+This function scores the percent accuracy and number of correct classifications.
 
 ### Training loop
 
@@ -387,6 +414,15 @@ def train(model, train_data, val_data, batch, epochs, lr, class_weights):
     return epoch_data
 {% endhighlight %}
 
+This is the standard training loop for a PyTorch model. Only thing Noteworthy things here are the criterion and optimizer.
+
+Notice
+{% highlight ruby %}
+criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
+{% endhighlight %}
+
+I used the class weights I calulated early with Cross Entropy Loss function. For the optimizer, I used Stochastic Gradient Descent with a learning rate specific to each model.
+
 ### Test out CNNs with different number of layers and feature maps
 {% highlight ruby %}
 expansions = []
@@ -419,6 +455,8 @@ for n in range(num_layers):
         runs.append((n, expr, n_params, epoch_data))
         del model
 {% endhighlight %}
+
+In the above code segment, I'm evaluating different CNN architectures based on number of convolutional layers and feature maps from each layer.
 
 ### Plotting loss and accuracies
 
@@ -536,21 +574,22 @@ dtype: object
 {% endhighlight %}
 
 ### What I learned
-The way we expand the number of feature maps at each conv layer doesn't seem to have any meaningful influence on the performance. It does appear to perform better the deeper the network gets, the last three with four conv layers all performed > 99.0%. I was satisfied with the results, with the best conv net having a score of 99.699% correct. However, I wanted to try out other conv nets.
+Expanding the number of feature maps at each conv layer doesn't seem to have any meaningful influence on the performance. It does appear to perform better the deeper the network gets, the last three with four conv layers all performed > 99.0%. I was satisfied with the results, with the best conv net having a score of 99.699% correct. However, I also wanted to try out a few popular conv net architectures.
 
-### VGGNet implementation
+### **VGGNet implementation**
 
 <a href="https://arxiv.org/abs/1409.1556">Very Deep Convolutional Networks for Large-Scale Image Recognition<a> 
 
 ![vgg_arch.png](/content/datamining/vgg_arch.png)
 
+**Notes**
 - Conv layers use 3x3 kernel with the exception of C
 - C uses 1x1 kernel at the end of the last three sections 
 - Padding used on convolutions to maintain dimensionality of input
 - Maxpool between each section of conv layers uses 2x2 for kernel and stride
 - Maxpool is followed by ReLU
 
-`Added batch norm after a convolution to originial model architecture`
+The original VGG didn't include batchnorm operations in the model, so that is something I included. Another thing to note is the image size they used. They used 224x224, however, my images will remain 256x256. I will not be experimenting with A-LRN, as the paper concluded that it did not improve performance and only increased memory usage and computation time. I didn't include softmax on the output because I'm using BCE as my loss function.
 
 {% highlight ruby %}
 class VGG(nn.Module):
@@ -604,3 +643,248 @@ class VGG(nn.Module):
     def forward(self, x):
         return self.classifier(self.net(x))
 {% endhighlight %}
+
+The model is actually very basic and structured similarly to how I made my vanilla CNN architecture. The main difference being the number of conv layers used. Also, a conv layer will expand the number of feature maps less frequently and only by a factor of 2 starting from 64.
+
+{% highlight ruby %}
+runs_vgg = []
+batch_size = 16
+num_epochs = 30
+lr = 1e-3
+
+for (vgg_arch, layers) in VGG().configs.items():
+    model = VGG(vgg_arch).to(device)
+    epoch_data = train(
+        model,
+        train_data,
+        val_data,
+        batch_size,
+        num_epochs,
+        lr,
+        class_weights
+    )
+    print("evaluating...")
+    model.eval()
+    _, accuracy = eval(model, val_data)
+    runs_vgg.append((
+        "VGG-" + str(np.sum(layers)) + vgg_arch,
+        n_params,
+        epoch_data
+    ))
+    del model
+{% endhighlight %}
+
+{% highlight ruby %}
+def subtitle(fig, grid, title):
+    row = fig.add_subplot(grid)
+    row.set_title(f'{title}', fontweight='semibold')
+    row.set_frame_on(False)
+    row.axis('off')
+
+def plot_runs(runs):
+    fig, axs = plt.subplots(len(runs), 2, figsize=(12,18))
+    grid = plt.GridSpec(len(runs), 2)
+
+    for i, (label, accuracy, epoch_data) in enumerate(runs):
+        train_info = [*zip(*epoch_data)]
+        axs[i, 0].set(ylabel="loss")
+        axs[i, 1].set(ylabel="accuracy")
+        axs[i, 0].plot(train_info[0], train_info[1], label=label)
+        axs[i, 1].plot(train_info[0], train_info[2], label="train")
+        axs[i, 1].plot(
+            train_info[0], train_info[3], linestyle="dashed", label="val"
+        )
+        subtitle(fig, grid[i, ::], label)
+
+    for ax in axs:
+        ax[0].set(ylabel="loss")
+        ax[1].set(ylabel="accuracy")
+        ax[0].set(xlabel="epoch")
+        ax[1].set(xlabel="epoch")
+
+    lines_labels = [ax.get_legend_handles_labels() for ax in axs[0][1:]]
+    lines, labels = [sum(l_l, []) for l_l in zip(*lines_labels)]
+    fig.legend(lines, labels, loc='center right')
+    plt.show()
+
+plot_runs(runs_vgg)
+{% endhighlight %}
+
+![vgg_arch.png](/content/datamining/vgg_plot1.png)
+
+Looking at the accuracy for the validation set, there are massive dips in some of the models. If you look closely, you can correspond these dips to an increase on the loss curve at the same epoch, which would explain the drop in accuracy.
+
+
+<!-- Model is penalized tremondously because of low batch size. The batches likely contained several samples of the smallest class with the heavy weight penalty and misclassified them by complete chance. -->
+
+
+{% highlight ruby %}
+def show_final_acc(runs):
+    convs = []
+    for (arch, n_params, epoch_data) in runs:
+        convs.append((f"{epoch_data[-1][-1]}%", arch))
+    df = pd.Series(*zip(*convs))
+    print("accuracies on validation set")
+    return df
+        
+show_final_acc(runs_vgg)
+{% endhighlight %}
+
+**Output**
+
+{% highlight ruby %}
+accuracies on validation set
+VGG-11A    99.398%
+VGG-13B    99.549%
+VGG-16C    99.098%
+VGG-16D    98.647%
+VGG-19E    98.496%
+dtype: object
+{% endhighlight %}
+
+### **GoogLeNet implementation**
+
+<a href="https://arxiv.org/abs/1409.4842.pdf">Going Deeper with Convolutions<a> 
+
+`Architecture`
+
+![google_arch.png](/content/datamining/google_arch.png)
+
+`Inception block`
+
+![inception_block.png](/content/datamining/inception_block.png)
+
+- Note: Model had softmax output layer
+
+`Added batch norm after convolution to original model architecture`
+
+{% highlight ruby %}
+class Conv(nn.Module):
+    def __init__(self, in_channels, out_channels, **kwargs):
+        super().__init__()
+        self.conv  = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, **kwargs),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU()
+        )
+
+    def forward(self, x):
+        return self.conv(x)
+{% endhighlight %}
+
+{% highlight ruby %}
+class Inception(nn.Module):
+    def __init__(self, in_channels, _1x1, _3x3r, _3x3, _5x5r, _5x5, pool):
+        super().__init__()
+        self.inc_block = self._gen_branches(
+            in_channels, _1x1, _3x3r, _3x3, _5x5r, _5x5, pool
+        )
+
+    def _gen_branches(self, in_channels, _1x1, _3x3r, _3x3, _5x5r, _5x5, pool):
+        b1 = nn.Sequential(Conv(in_channels, _1x1, kernel_size=1).to(device))
+        b2 = nn.Sequential(
+            Conv(in_channels, _3x3r, kernel_size=1).to(device),
+            Conv(_3x3r, _3x3, kernel_size=3, padding=1).to(device)
+        )
+        b3 = nn.Sequential(
+            Conv(in_channels, _5x5r, kernel_size=1).to(device),
+            Conv(_5x5r, _5x5, kernel_size=5, padding=2).to(device)
+        )
+        b4 = nn.Sequential(
+            nn.MaxPool2d(3, 1, 1),
+            Conv(in_channels, pool, kernel_size=1).to(device)
+        )
+
+        return [b1, b2, b3, b4]
+
+    def forward(self, x):
+        return torch.cat([b(x) for b in self.inc_block], dim=1)
+{% endhighlight %}
+
+{% highlight ruby %}
+class GoogLeNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layers = self._gen_layers()
+        self.classifier = self._classifier()
+
+    def _gen_layers(self):
+        layers = [
+            Conv(3, 64, kernel_size=7, stride=2, padding=3),
+            nn.MaxPool2d(3, 2, 1),
+            Conv(64, 192, kernel_size=3, stride=1, padding=1),
+            nn.MaxPool2d(3, 2, 1),
+            Inception(192, 64, 96, 128, 16, 32, 32),
+            Inception(256, 128, 128, 192, 32, 96, 64),
+            nn.MaxPool2d(3, 2, 1),
+            Inception(480, 192, 96, 208, 16, 48, 64),
+            Inception(512, 160, 112, 224, 24, 64, 64),
+            Inception(512, 128, 128, 256, 24, 64, 64),
+            Inception(512, 112, 144, 288, 32, 64, 64),
+            Inception(528, 256, 160, 320, 32, 128, 128),
+            nn.MaxPool2d(3, 2, 1),
+            Inception(832, 256, 160, 320, 32, 128, 128),
+            Inception(832, 384, 192, 384, 48, 128, 128),
+        ]
+
+        return nn.Sequential(*layers)
+
+    def _classifier(self):
+        feature_map_dim = IMG_SIZE // (2 ** 5)
+        layers = [
+            nn.AvgPool2d(feature_map_dim, 1),
+            nn.Flatten(1),
+            nn.Dropout(0.4),
+            nn.Linear(1024, NUM_CLASSES)
+        ]
+
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        x = self.layers(x)
+        x = self.classifier(x)
+        
+        return x
+{% endhighlight %}
+
+{% highlight ruby %}
+runs_google = []
+batch_size = 64
+num_epochs = 100
+lr = 1e-3
+
+model = GoogLeNet().to(device)
+epoch_data = train(
+        model,
+        train_data,
+        val_data,
+        batch_size,
+        num_epochs,
+        lr,
+        class_weights
+    )
+print("evaluating...")
+n_params = count_params(model)
+runs_google.append(("GoogLeNet", n_params, epoch_data))
+del model
+{% endhighlight %}
+
+{% highlight ruby %}
+train_info = [*zip(*runs_google[0][2])]
+acc = np.array(train_info[2]) / 100
+plt.figure(figsize=(12,6))
+plt.title("GoogLeNet", fontsize=15)
+plt.plot(train_info[0], train_info[1], label="GoogLeNet Loss")
+plt.plot(train_info[0], acc, label="GoogLeNet Accuracy", linestyle="dashed")
+plt.legend()
+
+print(f"GoogLeNet accuracy: {train_info[0][-1]:.3f}")
+{% endhighlight %}
+
+
+**Output**
+{% highlight ruby %}
+GoogLeNet accuracy: 99.000
+{% endhighlight %}
+
+![google_net_plot1.png](/content/datamining/google_net_plot1.png)

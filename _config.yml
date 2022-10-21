@@ -11,7 +11,7 @@ linkedin_username: william-sigala-89061424b
 
 show_excerpts: true
 excerpt_ separator: <!--more-->
-
+future: true
 # Build settings
 # theme: minima
 remote_theme: jekyll/minima

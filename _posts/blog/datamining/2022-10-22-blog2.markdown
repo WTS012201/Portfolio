@@ -1,0 +1,606 @@
+---
+layout: post
+excerpt_separator: <!--more-->
+permalink: /blog/datamining/conv_nets
+title: Image Classification with ConvNets
+date: 2022-10-22
+category: 0
+---
+
+### **Introduction**
+
+Convolutional neural networks have played a critical role in solving image classification problems and is often the first type of architecture considered for building image classifiers.<!--more-->
+
+### **What is convolution?**
+It's important to understand the key component that drives convolutional neural networks and why it performs so well in image classification.
+
+The convolutional layer is the defining feature of this type of neural network. This layer is responsible for learning features that belong to a class. It accomplishes this by applying a filter (kernel) on the receptive fields (local regions) of the input image, resulting in a feature map. Mathematically, this operation is done by applying the element-wise product between all of the receptive fields and the kernel, then summing each element in the receptive field, and finally mapping the results to the feature map.
+
+For example:
+
+$$
+A = 
+\begin{bmatrix}
+0 & 1 & 0 & 0 \\
+0 & 1 & 0 & 0 \\
+0 & 1 & 1 & 1 \\
+0 & 1 & 0 & 0
+\end{bmatrix}
+B =
+\begin{bmatrix}
+0 & 1 \\
+0 & 1
+\end{bmatrix}
+$$
+
+Let **A** represent a binary image and **B** be a 2x2 kernel used for detecting vertical edges in **A**. If we perform convolution with a stride of 2 and no padding, then our receptive fields would be the four 2x2 corners of **A** shown below.
+
+$$ 
+\begin{bmatrix}
+0 & 1 \\
+0 & 1 
+\end{bmatrix}
+\begin{bmatrix}
+0 & 0 \\
+0 & 0
+\end{bmatrix}
+$$
+
+$$ 
+\begin{bmatrix}
+0 & 1 \\
+0 & 1 
+\end{bmatrix}
+\begin{bmatrix}
+1 & 1 \\
+0 & 0
+\end{bmatrix}
+$$
+
+Apply the kernel to each receptive field
+
+$$ 
+TL: 
+\begin{bmatrix}
+0 & 1 \\
+0 & 1 
+\end{bmatrix}
+\circ B = 
+\begin{bmatrix}
+0 & 1 \\
+0 & 1 
+\end{bmatrix}
+\hspace{10pt}
+TR: 
+\begin{bmatrix}
+0 & 0 \\
+0 & 0
+\end{bmatrix}
+\circ B = 
+\begin{bmatrix}
+0 & 0 \\
+0 & 0
+\end{bmatrix}
+$$
+
+$$ 
+BL: 
+\begin{bmatrix}
+0 & 1 \\
+0 & 1 
+\end{bmatrix}
+\circ B = 
+\begin{bmatrix}
+0 & 1 \\
+0 & 1 
+\end{bmatrix}
+\hspace{10pt}
+BR: 
+\begin{bmatrix}
+1 & 1 \\
+0 & 0
+\end{bmatrix}
+\circ B = 
+\begin{bmatrix}
+0 & 1 \\
+0 & 0
+\end{bmatrix}
+$$
+
+Summing the elements for each corner
+
+$$
+\sum TL = 2
+\hspace{10pt}
+\sum TR = 0
+$$
+
+$$
+\sum BL = 2
+\hspace{10pt}
+\sum BR = 1
+$$
+
+$$
+{Feature\space Map = }
+\begin{bmatrix}
+2 & 0 \\
+2 & 1
+\end{bmatrix}
+$$
+
+The size of the feature map $$n_{out}$$ depends on the size of the input $$n_{in}$$, stride $$s$$, padding $$p$$, and kernel $$k$$. Typically, we want $$n_{in}$$ = $$n_{out}$$ as you'll see later
+
+$$
+n_{out}=\dfrac{n_{in} + 2p - k}{s} + 1
+$$
+
+<!-- Typically, we want $$n_{in}$$ to equal $$n_{out}$$ -->
+
+In computer vision, this process is used for image filtering and there are a variety of filters used for specific purposes. When we're dealing with image classification, it would be difficult to come up with the values for a filter for picking out parts of a body such as hair. Furthermore, hair can come in different shapes and colors. This is where convolution in neural networks excel at. We can have the neural network come up with the best values (weights) for a filter automatically with a convolutional layer. Additionally, we can apply as many filters as we want at each layer.
+
+## More on conv nets
+
+Another key component in convolutional neural networks is the pooling layer. Generally, the location of a feature is only significant when accounting for neighboring features. For example, the defining features of a face are eyes, nose, and mouth. In an image, these features need to be near each other to define a face. However, the location of the face in the image is insignifcant. Max pooling is a common technique that can be applied periodically throughout the network to downsample (also known as subsampling), reducing the number of parameters in the network while being locally shift invariant. In max pooling, the largest value that lies within a filter is kept.
+
+For example:
+with kernel size and shift of 2
+
+$$
+\begin{bmatrix}
+2 & 0 & 0 & 3 \\
+\underline{\textbf{3}} & 1 & \underline{\textbf{5}} & 1 \\
+2 & 0 & 0 & \underline{\textbf{2}} \\
+\underline{\textbf{3}} & 1 & 1 & 1 \\
+\end{bmatrix}
+\xrightarrow{\text{maxpool}}
+\begin{bmatrix}
+3 & 5 \\
+3 & 2
+\end{bmatrix}
+$$
+
+These two components are essential for any convolutional network, so understanding how each work will make understanding conv nets simple.
+
+### **Convolutional Neural Networks with PyTorch**
+I'll be demonstrating my attempt at CNNs with
+<a href="https://www.kaggle.com/datasets/maricinnamon/caltech101-airplanes-motorbikes-schooners">Caltech101 | Airplanes, Motorbikes & Schooners<a> 
+
+For the sake of brevity, I will only explain the code related towards the topic. The notebook is available <a href="https://github.com/WTS012201/CSE4334/blob/main/assignment2/eval.ipynb">Here<a> 
+
+
+{% highlight ruby %}
+import torch
+import torch.nn as nn
+import torchvision.datasets as datasets
+import torchvision.transforms as transforms
+from torch.utils.data import WeightedRandomSampler, DataLoader
+import torch.optim as optim
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+
+NUM_CLASSES = 3
+CHANNELS_D = 3
+IMG_SIZE = 256
+DATA_DIR = "/home/will/Documents/datasets/archive/caltech101_classification/"
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+classes = ["Motorcycle", "Airplane", "Schooner"]
+{% endhighlight %}
+
+### **Data**
+
+{% highlight ruby %}
+# for simplicity, just normalize whole dataset instead of each class label
+def norm_transforms():
+    transform = transforms.Compose(
+        [transforms.Resize((IMG_SIZE, IMG_SIZE)), transforms.ToTensor()]
+    )
+    dataset = datasets.ImageFolder(root=DATA_DIR, transform=transform)
+    # concat image data (CxWxH) in tensor, discard labels
+    imgs = torch.stack([img_t for img_t, _ in dataset], dim=3)
+    # flatten the three channels of all images and take the mean
+    mean = np.array([m for m in imgs.view(3, -1).mean(dim=1)])
+    std = np.array([s for s in imgs.view(3, -1).std(dim=1)])
+
+    norm = transforms.Normalize(
+        mean = mean,
+        std = std
+    )
+    unnorm = transforms.Normalize(
+        mean = -(mean/std),
+        std = (1 / std)
+    )
+    
+    return norm, unnorm
+norm, unnorm = norm_transforms()
+{% endhighlight %}
+
+{% highlight ruby %}
+import pandas as pd
+
+class_weights = []
+total_len = 0
+for _, _, files in os.walk(DATA_DIR):
+    if len(files) > 0:
+        class_weights.append(len(files))
+    total_len += len(files)
+plt.bar(classes[::-1], class_weights)
+plt.title("Number of images per class")
+plt.show()
+
+class_weights = np.round((1 - np.array(class_weights) / total_len), 3)
+class_weights = class_weights.tolist()
+
+print("Class_weights")
+df = pd.Series(classes[::-1], class_weights)
+class_weights = torch.tensor(class_weights)
+
+df
+{% endhighlight %}
+
+**Output**
+
+![](/content/datamining/conv_nets_bar.png)
+
+{% highlight ruby %}
+Class_weights
+0.962      Schooner
+0.518      Airplane
+0.520    Motorcycle
+dtype: object
+{% endhighlight %}
+
+{% highlight ruby %}
+def load_data():
+    transform = transforms.Compose(
+        [
+            transforms.Resize((IMG_SIZE, IMG_SIZE)),
+            transforms.ToTensor(),
+            norm,
+        ]
+    )
+    dataset = datasets.ImageFolder(root=DATA_DIR, transform=transform)
+
+    train_size = int(0.6 * len(dataset))
+    test_size = len(dataset) - train_size
+
+    train_data, test_data = torch.utils.data.random_split(
+        dataset, [train_size, test_size]
+    )
+
+    return train_data, test_data
+    # train_data, test_val_data = torch.utils.data.random_split(
+    #     dataset, [train_size, test_val_size]
+    # )
+
+    # val_size = int(0.5 * len(test_val_data))
+    # test_size = len(test_val_data) - val_size
+    # val_data, test_data = torch.utils.data.random_split(
+    #     test_val_data, [val_size, test_size]
+    # )
+    # return train_data, val_data, test_data
+    
+# train_data, val_data, test_data = load_data()
+train_data, val_data = load_data()
+{% endhighlight %}
+
+### **My attempt at CNNs**
+
+{% highlight ruby %}
+class CNN(nn.Module):
+    def __init__(self, num_layers, expansion):
+        super().__init__()
+        self.fcl, self.net = self._gen_layers(num_layers, expansion)
+        self.classifier = self._classifier()
+        
+    def _gen_layers(self, num_layers, expansion):
+        layers = []
+        in_channels = CHANNELS_D
+        
+        for i in range(num_layers):
+            out_channels = expansion(in_channels)
+            layers += [
+                nn.Conv2d(in_channels, out_channels, kernel_size=5, padding=2)
+            ]
+            layers += [nn.ReLU(), nn.BatchNorm2d(out_channels)]
+            layers += [nn.MaxPool2d(2, 2)]
+            in_channels = out_channels
+        fcl = ((IMG_SIZE // (2 ** num_layers)) ** 2) * in_channels
+        
+        return fcl, nn.Sequential(*layers)
+
+    def _classifier(self):
+        layers = [
+            nn.Flatten(1),
+            nn.Linear(self.fcl, 256),
+            nn.ReLU(),
+            nn.Linear(256, NUM_CLASSES)
+        ]
+        
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.classifier(self.net(x))
+{% endhighlight %}
+
+### Metrics for training
+
+{% highlight ruby %}
+def eval(model, data):
+    with torch.no_grad():
+        correct = 0
+
+        for (img, label) in data:
+            img_input = img.to(device).unsqueeze(0)
+            pred = model(img_input)
+            _, pred = torch.max(pred.squeeze(), 0)
+            pred = pred.to("cpu")
+            correct += pred.item() == label
+        return correct, round((correct / len(data) * 100), 3)
+        
+def count_params(model: nn.Module):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+{% endhighlight %}
+
+### Training loop
+
+{% highlight ruby %}
+def train(model, train_data, val_data, batch, epochs, lr, class_weights):
+    loader = DataLoader(
+        train_data,
+        batch_size=batch,
+        shuffle=True,
+        num_workers=2,
+    )
+    criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
+    optimizer = optim.SGD(model.parameters(), lr=lr)
+
+    epoch_data = []
+    for epoch in range(epochs):
+        running_loss, running_acc = 0.0, 0.0
+        for i, (imgs, labels) in enumerate(loader):
+            inputs, labels = imgs.to(device), labels.to(device)
+            optimizer.zero_grad()
+
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+            _, pred = torch.max(outputs, dim=1)
+            running_acc += torch.sum(pred == labels).item()
+
+        model.eval()
+        _, val_acc = eval(model, val_data)
+        model.train()
+
+        running_acc = round(running_acc / len(train_data) * 100, 3)
+        running_loss /= len(loader)
+        print(f'epoch: {epoch + 1} loss: {running_loss:.6f}')
+        epoch_data.append(
+            (epoch, float(f"{(running_loss):.6f}"), running_acc, val_acc)
+        )
+    
+    return epoch_data
+{% endhighlight %}
+
+### Test out CNNs with different number of layers and feature maps
+{% highlight ruby %}
+expansions = []
+lrs = [1e-4, 2e-3, 35e-4, 0.01]
+num_layers = 4
+batch_size = 128
+num_epochs = 20
+
+# recursive expressions to use for expanding feature map from conv layer
+expansions.append(lambda x: x + 13)
+expansions.append(lambda x: x*2 if x < 20 else x + (x // 2))
+expansions.append(lambda x: x*3 if x < 50 else x + (x // 6))
+
+runs = []
+for n in range(num_layers):
+    for expr in expansions:
+        model = CNN(n + 1, expr).to(device)
+        epoch_data = train(
+            model,
+            train_data,
+            val_data,
+            batch_size,
+            num_epochs,
+            lrs[n],
+            class_weights
+        )
+        print("evaluating...")
+        model.eval() # set eval for batch norm bc batch size is only 1
+        n_params = count_params(model)
+        runs.append((n, expr, n_params, epoch_data))
+        del model
+{% endhighlight %}
+
+### Plotting loss and accuracies
+
+{% highlight ruby %}
+def str_conv_seq(expr, n_lay):
+    prior = CHANNELS_D
+    conv_seq = str(prior)
+    total = 0
+    for i in range(n_lay + 1):
+        prior = expr(prior)
+        total += prior
+        conv_seq += f"->{str(prior)}"
+    conv_seq
+    return conv_seq, total
+
+def plot_losses(runs):
+    fig, axs = plt.subplots(1, len(expansions), figsize=(28,6),
+        gridspec_kw={'wspace': 0}, sharey=True)
+
+    axs[0].set_ylabel("loss", fontsize=15)
+    for (n_lay, expr, n_params, epoch_data) in runs:
+        c = expansions.index(expr)
+        conv_seq, _ = str_conv_seq(expr, n_lay)
+        train_info = [*zip(*epoch_data)]
+        axs[c].set_title(
+            "Feature Map Expansion: " + conv_seq, fontsize=15
+        )
+        if c == len(expansions) - 1:
+            axs[c].plot(
+                train_info[0],
+                train_info[1],
+                label=f"{n_lay + 1} conv layers"
+            )    
+        else:
+            axs[c].plot(train_info[0], train_info[1])
+
+    for ax in axs:
+        ax.set_xlabel("epoch", fontsize=15)
+        ax.set_xticks(np.arange(0, num_epochs + 1, 5))
+
+    lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
+    lines, labels = [sum(l_l, []) for l_l in zip(*lines_labels)]
+    fig.legend(lines, labels, fontsize=15, loc="upper center")
+    fig.subplots_adjust(top=0.7)
+
+def plot_accuracies(runs):
+    fig, axs = plt.subplots(2, len(expansions), figsize=(28,8),
+        gridspec_kw={'hspace': 0, 'wspace': 0})
+
+    axs[0, 0].set_ylabel('Train accuracy', fontsize=15)
+    axs[1, 0].set_ylabel('Val accuracy', fontsize=15)
+    for (n_lay, expr, n_params, epoch_data) in runs:
+        c = expansions.index(expr)
+        conv_seq, _ = str_conv_seq(expr, n_lay)
+        train_info = [*zip(*epoch_data)]
+
+        if c == len(expansions) - 1:
+            axs[0, c].plot(
+                train_info[0],
+                train_info[2],
+                label=f"{n_lay + 1} conv layers"
+            ) 
+        else:
+            axs[0, c].plot(train_info[0], train_info[2])
+        
+        axs[0, c].set_title(
+            "Feature Map Expansion: " + conv_seq, fontsize=15
+        )
+        axs[1, c].plot(train_info[0], train_info[3])
+
+    for ax in axs[1, :]:
+        ax.set_xlabel("epoch", fontsize=15)
+        ax.set_xticks(np.arange(0, num_epochs + 1, 5))
+  
+plot_losses(runs)
+plot_accuracies(runs)
+{% endhighlight %}
+
+[ ![](/content/datamining/conv_nets_plot1.png) ](/content/datamining/conv_nets_plot1.png)
+
+[ ![](/content/datamining/conv_nets_plot2.png) ](/content/datamining/conv_nets_plot2.png)
+
+
+{% highlight ruby %}
+def show_final_acc(runs):
+    convs = []
+    for (n_lay, expr, _, epoch_data) in runs:
+        conv_seq, total = str_conv_seq(expr, n_lay)
+        conv_seq += f" FM total: {total}"
+        convs.append((f"{epoch_data[-1][-1]}%", conv_seq))
+    df = pd.Series(*zip(*convs))
+    print("accuracies on validation set")
+    return df
+        
+show_final_acc(runs)
+{% endhighlight %}
+
+**Output**
+
+{% highlight ruby %}
+accuracies on validation set
+3->16 FM total: 16                 95.789%
+3->6 FM total: 6                   90.376%
+3->9 FM total: 9                   93.233%
+3->16->29 FM total: 45             98.797%
+3->6->12 FM total: 18              98.647%
+3->9->27 FM total: 36              99.098%
+3->16->29->42 FM total: 87         98.496%
+3->6->12->24 FM total: 42          98.496%
+3->9->27->81 FM total: 117         98.496%
+3->16->29->42->55 FM total: 142    99.398%
+3->6->12->24->36 FM total: 78      99.398%
+3->9->27->81->94 FM total: 211     99.699%
+dtype: object
+{% endhighlight %}
+
+### What I learned
+The way we expand the number of feature maps at each conv layer doesn't seem to have any meaningful influence on the performance. It does appear to perform better the deeper the network gets, the last three with four conv layers all performed > 99.0%. I was satisfied with the results, with the best conv net having a score of 99.699% correct. However, I wanted to try out other conv nets.
+
+### VGGNet implementation
+
+<a href="https://arxiv.org/abs/1409.1556">Very Deep Convolutional Networks for Large-Scale Image Recognition<a> 
+
+![vgg_arch.png](/content/datamining/vgg_arch.png)
+
+- Conv layers use 3x3 kernel with the exception of C
+- C uses 1x1 kernel at the end of the last three sections 
+- Padding used on convolutions to maintain dimensionality of input
+- Maxpool between each section of conv layers uses 2x2 for kernel and stride
+- Maxpool is followed by ReLU
+
+`Added batch norm after a convolution to originial model architecture`
+
+{% highlight ruby %}
+class VGG(nn.Module):
+    def __init__(self, net_config=None):
+        super().__init__()
+        self.configs = {         # not including A-LRN for convenience
+            'A': [1, 1, 2, 2, 2],
+            'B': [2, 2, 2, 2, 2],
+            'C': [2, 2, 3, 3, 3],
+            'D': [2, 2, 3, 3, 3],
+            'E': [2, 2, 4, 4, 4]
+        }
+        if net_config:
+            self.fcl, self.net = self._gen_layers(net_config)
+            self.classifier = self._classifier()
+
+    def _gen_layers(self, net_config):
+        layers = []
+        num_layers = self.configs[net_config]
+        in_channels, out_channels = CHANNELS_D, 64
+
+        for i, n in enumerate(num_layers):
+            for j in range(1, n + 1):
+                c_trans = net_config == "C" and j == n and out_channels >= 256
+                (kernel, pad) = (1, 0) if c_trans else (3, 1)
+                layers.append(nn.Conv2d(
+                        in_channels, out_channels, kernel, padding=pad
+                    )
+                )
+                layers.append(nn.BatchNorm2d(out_channels))
+                layers.append(nn.ReLU())
+                in_channels = out_channels
+            layers.append(nn.MaxPool2d(2, 2))
+            if out_channels < 512:
+                out_channels *= 2
+        fcl = ((IMG_SIZE // (2 ** 5)) ** 2) * in_channels
+
+        return fcl, nn.Sequential(*layers)
+
+    def _classifier(self):
+        layers = []
+        layers += [
+            nn.Flatten(1),
+            nn.Linear(self.fcl, 4096), nn.ReLU(),
+            nn.Linear(4096, 4096), nn.ReLU(),
+            nn.Linear(4096, NUM_CLASSES)
+        ]
+
+        return nn.Sequential(*layers)
+        
+    def forward(self, x):
+        return self.classifier(self.net(x))
+{% endhighlight %}

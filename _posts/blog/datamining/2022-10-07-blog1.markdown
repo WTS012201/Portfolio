@@ -3,7 +3,7 @@ layout: post
 excerpt_separator: <!--more-->
 permalink: /blog/datamining/kaggle_titanic
 title: Titanic - Machine Learning from Disaster
-date: 2020-10-07
+date: 2022-10-07
 category: 0
 ---
 

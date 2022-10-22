@@ -12,9 +12,7 @@ category: 0
 **Convolutional neural networks**  have played a critical role in solving image classification problems and is typically the first type of architecture considered for building image classifiers.<!--more-->
 
 ### **What is convolution?**
-It's important to understand the key component that drives convolutional neural networks and why it performs so well in image classification.
-
-The convolutional layer is the defining feature of this type of neural network. This layer is responsible for learning features that belong to a class. It accomplishes this by applying a filter (kernel) on the receptive fields (local regions) of the input image, resulting in a feature map. Mathematically, this operation is done by applying the element-wise product between all of the receptive fields and the kernel, then summing every element in each receptive field, and finally mapping the summed values to the feature map.
+It's important to understand the key component that drives convolutional neural networks and why it performs so well in image classification. The convolutional layer is the defining feature of this type of neural network. This layer is responsible for learning features that belong to a class. It accomplishes this by applying a filter (kernel) on the receptive fields (local regions) of the input image, resulting in a feature map. Mathematically, this operation is done by applying the element-wise product between all of the receptive fields and the kernel, then summing every element in each receptive field, and finally mapping the summed values to the feature map.
 
 For example:
 
@@ -572,13 +570,13 @@ dtype: object
 {% endhighlight %}
 
 ### **What I learned**
-Expanding the number of feature maps at each conv layer doesn't seem to have any meaningful influence on the performance. It does appear to perform better the deeper the network gets, the last three with four conv layers all performed > 99.0%. I was satisfied with the results, with the best conv net having a score of **99.699%** correct.
+Expanding the number of feature maps at each conv layer doesn't seem to have any meaningful influence on the performance. It does appear to perform better the deeper the network gets, the last three runs with four conv layers all performed > 99.0%. I was satisfied with the results, with the best conv net having a score of **99.699%** correct.
 
-I also tried implementing a few popular ConvNet architectures that interested me for fun which will be the remainder of this blog.
+I also tried implementing a few popular ConvNet architectures that interested me for fun.
 
 ### **VGGNet implementation**
 
-<a href="https://arxiv.org/abs/1409.1556">Very Deep Convolutional Networks for Large-Scale Image Recognition<a> 
+[1] <a href="https://arxiv.org/abs/1409.1556">Very Deep Convolutional Networks for Large-Scale Image Recognition<a> 
 
 ![vgg_arch.png](/content/datamining/vgg_arch.png)
 
@@ -589,7 +587,7 @@ I also tried implementing a few popular ConvNet architectures that interested me
 - Maxpool between each section of conv layers uses 2x2 for kernel and stride
 - Maxpool is followed by ReLU
 
-The original VGG didn't include batchnorm operations in the model, so that is something I included. Another thing to note is the image size they used. They used 224x224, however, my images will remain 256x256. I will not be experimenting with A-LRN, as the paper concluded that it did not improve performance and only increased memory usage and computation time. I didn't include softmax on the output because I'm using BCE as my loss function.
+The original VGG didn't include batchnorm operations in the model, so that is something I included. Another thing to note is the image size they used. They used 224x224, however, my images will remain 256x256. I will not be experimenting with A-LRN, as the paper concluded that it did not improve performance and only increased memory usage and computation time. I didn't include softmax on the output because I'm using cross entropy loss as my loss function.
 
 {% highlight ruby %}
 class VGG(nn.Module):
@@ -714,10 +712,6 @@ plot_runs(runs_vgg)
 
 Looking at the accuracy for the validation set, there are massive dips in some of the models. If you look closely, you can correspond these dips to an increase on the loss curve at the same epoch, which would explain the drop in accuracy.
 
-
-<!-- Model is penalized tremondously because of low batch size. The batches likely contained several samples of the smallest class with the heavy weight penalty and misclassified them by complete chance. -->
-
-
 {% highlight ruby %}
 def show_final_acc(runs):
     convs = []
@@ -744,7 +738,7 @@ dtype: object
 
 ### **GoogLeNet implementation**
 
-<a href="https://arxiv.org/abs/1409.4842.pdf">Going Deeper with Convolutions<a> 
+[2] <a href="https://arxiv.org/abs/1409.4842.pdf">Going Deeper with Convolutions<a> 
 
 **Architecture**
 
@@ -895,3 +889,9 @@ GoogLeNet accuracy: 99.000
 {% endhighlight %}
 
 ![google_net_plot1.png](/content/datamining/google_net_plot1.png)
+
+### **References**
+
+[1] Simonyan, Karen, and Andrew Zisserman. “Very Deep Convolutional Networks for Large-Scale Image Recognition.” ArXiv.org, 10 Apr. 2015, <a href="https://arxiv.org/abs/1409.1556">https://arxiv.org/abs/1409.1556.<a> 
+
+[2] Szegedy, Christian, et al. “Going Deeper with Convolutions.” ArXiv.org, 17 Sept. 2014 <a href="https://arxiv.org/abs/1409.4842.pdf">https://arxiv.org/abs/1409.4842.<a> 

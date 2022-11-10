@@ -7,8 +7,10 @@ date: 2022-10-22
 category: 0
 ---
 
-### **Introduction**
 **Convolutional neural networks**  have played a critical role in solving image classification problems and is typically the first type of architecture considered for building image classifiers.<!--more-->
+
+* TOC
+{:toc}
 
 ### **What is convolution?**
 It's important to understand the key component that drives convolutional neural networks and why it performs so well in image classification. The convolutional layer is the defining feature of this type of neural network. This layer is responsible for learning features that belong to a class. It accomplishes this by applying a filter (kernel) on the receptive fields (local regions) of the input image, resulting in a feature map. Mathematically, this operation is done by applying the element-wise product between all of the receptive fields and the kernel, then summing every element in each receptive field, and finally mapping the summed values to the feature map.
@@ -69,9 +71,9 @@ $$
 
   C_{n\times n} =
   \left[ {\begin{array}{cccc}
-    c_{11} \cdots & c_{1n}\\
-    \vdots \ddots & \vdots\\
-    c_{n1} \cdots & a_{nn}\\
+    c_{11} & \cdots & c_{1n}\\
+    \vdots & \ddots & \vdots\\
+    c_{n1} & \cdots & a_{nn}\\
   \end{array} } \right]
 \ \text{where n is the size of the feature map and} \
 c_{ij} = \sum_{i}\sum_{j} (S_{ij} \odot B)_{ij}
@@ -90,7 +92,7 @@ This is a very basic example, but it highlights the intuition behind convolution
 
 In computer vision, this process is used for image filtering and there are a variety of filters used for specific purposes such as edge detection and noise removal. When we're dealing with image classification, it would be difficult to come up with the values of a filter for picking out parts of a body such as hair. Furthermore, hair can come in many different shapes and colors. This is where convolution in neural networks excel at. We can have the neural network come up with the best values (weights) for a filter automatically with a convolutional layer. Additionally, we can apply as many filters as we want at each layer.
 
-## More on ConvNets
+### **More on ConvNets**
 
 Another key component in convolutional neural networks is the pooling layer. Generally, the location of a feature is only significant when accounting for neighboring features. For example, the defining features of a face are eyes, nose, and mouth. In an image, these features need to be near each other to define a face. However, the location of the face in the image is insignifcant. Max pooling is a common technique that can be applied periodically throughout the network to downsample (also known as subsampling), reducing the number of parameters in the network while being locally shift invariant. In max pooling, the largest value that lies within a filter is kept.
 
@@ -299,7 +301,7 @@ Notice
 This expression represents the number of neurons in each feature map multiplied by the number of feature maps at the end of `gen_layers`. Recall that maintaining dimensionality of the feature maps  $$n_{in}$$ = $$n_{out}$$ makes computing this value convenient.
 
 
-### Metrics for training
+### **Metrics for training**
 
 {% highlight ruby %}
 def eval(model, data):
@@ -320,7 +322,7 @@ def count_params(model: nn.Module):
 
 This function scores the percent accuracy and number of correct classifications.
 
-### Training loop
+### **Training loop**
 
 {% highlight ruby %}
 def train(model, train_data, val_data, batch, epochs, lr, class_weights):
@@ -370,9 +372,9 @@ Notice
 criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
 {% endhighlight %}
 
-I used the class weights I calculated early with the `Cross Entropy Loss` function. For the optimizer, I used `Stochastic Gradient Descent` with a learning rate specific to each model.
+I used the class weights I calculated earlier with the `Cross Entropy Loss` function. For the optimizer, I used `Stochastic Gradient Descent` with a learning rate specific to each model.
 
-### Test out CNNs with different number of layers and feature maps
+### **Test out CNNs** 
 {% highlight ruby %}
 expansions = []
 lrs = [1e-4, 2e-3, 35e-4, 0.01]
@@ -407,7 +409,7 @@ for n in range(num_layers):
 
 In the above code segment, I'm evaluating different CNN architectures based on number of convolutional layers and number of feature maps from each layer.
 
-### Plotting losses and accuracies
+### **Plotting losses and accuracies**
 
 {% highlight ruby %}
 def str_conv_seq(expr, n_lay):

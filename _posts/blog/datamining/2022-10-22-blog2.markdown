@@ -8,7 +8,6 @@ category: 0
 ---
 
 ### **Introduction**
-
 **Convolutional neural networks**  have played a critical role in solving image classification problems and is typically the first type of architecture considered for building image classifiers.<!--more-->
 
 ### **What is convolution?**
@@ -19,10 +18,10 @@ For example:
 $$
 A = 
 \begin{bmatrix}
-0 & 1 & 0 & 0 \\
-0 & 1 & 0 & 0 \\
-0 & 1 & 1 & 1 \\
-0 & 1 & 0 & 0
+0 & 0.5 & 0 & 0 \\
+0 & 0.5 & 0 & 0 \\
+0 & 0.5 & 0.5 & 0.5 \\
+0 & 0.5 & 0 & 0
 \end{bmatrix}
 B =
 \begin{bmatrix}
@@ -31,111 +30,65 @@ B =
 \end{bmatrix}
 $$
 
-Let **A** represent a binary image and **B** be a 2x2 kernel used for detecting vertical edges in **A**. If we perform convolution with a stride of 2 and no padding, then our receptive fields would be the four 2x2 corners of **A** shown below.
+Let **A** represent a grayscale image and **B** be a 2x2 kernel used for detecting vertical edges in **A**. If we perform convolution with a stride of 2 and no padding, then our receptive fields would be the four 2x2 corners of **A** shown below.
+
+
 
 $$ 
-\begin{bmatrix}
-0 & 1 \\
-0 & 1 
-\end{bmatrix}
-\begin{bmatrix}
-0 & 0 \\
-0 & 0
-\end{bmatrix}
+S = \left[ 
+\begin{array}{c|c} 
+  S_{11} & S_{12} \\ 
+  \hline 
+  S_{21} & S_{22} 
+\end{array} 
+\right] = 
+\left[\begin{array}{c|c}
+    \begin{bmatrix}
+    0 & 1 \\
+    0 & 1 
+    \end{bmatrix} &
+    \begin{bmatrix}
+    0 & 0 \\
+    0 & 0
+    \end{bmatrix} \\
+    \hline 
+    \begin{bmatrix}
+    0 & 1 \\
+    0 & 1 
+    \end{bmatrix} &
+    \begin{bmatrix}
+    1 & 1 \\
+    0 & 0
+    \end{bmatrix}
+\end{array}\right] 
 $$
 
-$$ 
-\begin{bmatrix}
-0 & 1 \\
-0 & 1 
-\end{bmatrix}
-\begin{bmatrix}
-1 & 1 \\
-0 & 0
-\end{bmatrix}
-$$
-
-Apply the kernel to each receptive field
-
-$$ 
-TL: 
-\begin{bmatrix}
-0 & 1 \\
-0 & 1 
-\end{bmatrix}
-\circ B = 
-\begin{bmatrix}
-0 & 1 \\
-0 & 1 
-\end{bmatrix}
-\hspace{10pt}
-TR: 
-\begin{bmatrix}
-0 & 0 \\
-0 & 0
-\end{bmatrix}
-\circ B = 
-\begin{bmatrix}
-0 & 0 \\
-0 & 0
-\end{bmatrix}
-$$
-
-$$ 
-BL: 
-\begin{bmatrix}
-0 & 1 \\
-0 & 1 
-\end{bmatrix}
-\circ B = 
-\begin{bmatrix}
-0 & 1 \\
-0 & 1 
-\end{bmatrix}
-\hspace{10pt}
-BR: 
-\begin{bmatrix}
-1 & 1 \\
-0 & 0
-\end{bmatrix}
-\circ B = 
-\begin{bmatrix}
-0 & 1 \\
-0 & 0
-\end{bmatrix}
-$$
-
-Summing the elements for each corner
+Apply the kernel to each receptive field and sum the elements to the resulting feature map.
 
 $$
-\sum TL = 2
-\hspace{10pt}
-\sum TR = 0
+
+  C_{n\times n} =
+  \left[ {\begin{array}{cccc}
+    c_{11} \cdots & c_{1n}\\
+    \vdots \ddots & \vdots\\
+    c_{n1} \cdots & a_{nn}\\
+  \end{array} } \right]
+\ \text{where n is the size of the feature map and} \
+c_{ij} = \sum_{i}\sum_{j} (S_{ij} \odot B)_{ij}
+% \ \text{and }
 $$
 
-$$
-\sum BL = 2
-\hspace{10pt}
-\sum BR = 1
-$$
+![conv.gif](/content/datamining/conv.gif)
 
-$$
-{Feature\space Map = }
-\begin{bmatrix}
-2 & 0 \\
-2 & 1
-\end{bmatrix}
-$$
-
-The size of the feature map $$n_{out}$$ depends on the size of the input $$n_{in}$$, stride $$s$$, padding $$p$$, and kernel $$k$$. Typically, we want $$n_{in}$$ = $$n_{out}$$ as you'll see later.
+The size of the feature map $$n_{out}$$ depends on the size of the input $$n_{in}$$, stride $$s$$, padding $$p$$, and kernel $$k$$.  In the example, $$n_{in}$$ = 4 reduced to $$n_{out}$$ = 2, but typically we want $$n_{in}$$ = $$n_{out}$$ as you'll see later.
 
 $$
 n_{out}=\dfrac{n_{in} + 2p - k}{s} + 1
 $$
 
-<!-- Typically, we want $$n_{in}$$ to equal $$n_{out}$$ -->
+This is a very basic example, but it highlights the intuition behind convolution. We're essentially trying to exaggerate a feature we're looking for in an image. In this case the vertical edge became more pronounced in the output image.
 
-In computer vision, this process is used for image filtering and there are a variety of filters used for specific purposes. When we're dealing with image classification, it would be difficult to come up with the values of a filter for picking out parts of a body such as hair. Furthermore, hair can come in different shapes and colors. This is where convolution in neural networks excel at. We can have the neural network come up with the best values (weights) for a filter automatically with a convolutional layer. Additionally, we can apply as many filters as we want at each layer.
+In computer vision, this process is used for image filtering and there are a variety of filters used for specific purposes such as edge detection and noise removal. When we're dealing with image classification, it would be difficult to come up with the values of a filter for picking out parts of a body such as hair. Furthermore, hair can come in many different shapes and colors. This is where convolution in neural networks excel at. We can have the neural network come up with the best values (weights) for a filter automatically with a convolutional layer. Additionally, we can apply as many filters as we want at each layer.
 
 ## More on ConvNets
 
@@ -410,7 +363,7 @@ def train(model, train_data, val_data, batch, epochs, lr, class_weights):
     return epoch_data
 {% endhighlight %}
 
-This is the standard training loop for a PyTorch model. Only thing Noteworthy here are the criterion and optimizer.
+This is the standard training loop for a PyTorch model. Only things Noteworthy here are the criterion and optimizer.
 
 Notice
 {% highlight ruby %}
@@ -454,7 +407,7 @@ for n in range(num_layers):
 
 In the above code segment, I'm evaluating different CNN architectures based on number of convolutional layers and number of feature maps from each layer.
 
-### Plotting loss and accuracies
+### Plotting losses and accuracies
 
 {% highlight ruby %}
 def str_conv_seq(expr, n_lay):
@@ -587,7 +540,58 @@ I also tried implementing a few popular ConvNet architectures that interested me
 - Maxpool between each section of conv layers uses 2x2 for kernel and stride
 - Maxpool is followed by ReLU
 
-The original VGG didn't include batchnorm operations in the model, so that is something I included. Another thing to note is the image size they used. They used 224x224, however, my images will remain 256x256. I will not be experimenting with A-LRN, as the paper concluded that it did not improve performance and only increased memory usage and computation time. I didn't include softmax on the output because I'm using cross entropy loss as my loss function.
+The original VGG didn't include batchnorm operations in the model, so that is something I included. Another thing to note is the image size they used. They used 224x224, however, my images will remain 256x256. I will not be experimenting with A-LRN, as the paper concluded that it did not improve performance and only increased memory usage and computation time.
+
+I didn't include softmax on the output because I'm using cross entropy loss (CEL) as my loss function. Generally, the combination of both would introduce vanishing gradient problem because PyTorch incorporates softmax into CEL by default. See <a href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html">torch.nn.CrossEntropyLoss<a> 
+
+<!-- 
+$$
+L(\hat{y}, y)=-\sum_{c=1}^{C}y_{c}w_{c}\log(\hat{y}_{c})\\
+$$
+
+$$
+\bullet \ \text{C is the number of class labels} \\
+\bullet \ {y}\ \text{is a one-hot vector indicating the ground truth} \\
+\bullet \ w \ \text{is a vector containing the weights for penalizing a class} \\
+$$
+
+$$
+\hat{y_{c}} = \sigma(z)_{c} = 
+\frac{\exp{(z_{c})}}{\sum\nolimits_{i=1}^{C}\exp{(z_{i})}}
+$$
+
+$$
+\bullet \ \hat{y}_{c} \
+\text{is the predicted probability of the output layer by applying}\\
+\text{softmax } \sigma \ \text {on the output vector } z \ \text{from the network for class } c
+$$
+
+Since $${y}$$ will only contain one instance of a certain class in an image, we can represent the loss function as
+
+$$
+L(\hat{y}, y)=-\log(\hat{y}_{t})=-\log(\sigma({z})_{t})=-w_{t}\log\left(\frac{\exp{(z_{t})}}{\sum\nolimits_{i=1}^{C}\exp{(z_{i})}}\right)\\
+$$
+
+$$
+\text{where } t \ \text{is the target } (y_{t}= 1) 
+$$
+
+Similar to normalizing the image values, we're squishing the values from the output vector into a range [0, 1] and sums to 1 in order to achieve stability when computing derivatives for backpropagation. If I had included softmax as part of the output layer...
+
+
+$$
+Forward: \hspace{10pt} L(\hat{y}, y)=-\log(\sigma(\sigma({z})))_{t}
+$$
+
+$$
+Backward: \hspace{10pt} \nabla_{w} L(\hat{y}, y)
+$$
+
+We only need to compute two partial derivatives, one for when $$y_{c} = 1$$ and one for $$y_{c} = 0$$. Take derivative with respect to output neuron $$z_{c}$$.
+
+$$y_{c} = 1: -\frac{\partial \log(\sigma(z)_{c})}{\partial z_{c}} = -w_{c}$$ -->
+
+I had orignally included it to see what my results would look like, the loss would struggled to decrease, the model wouldn't improve.
 
 {% highlight ruby %}
 class VGG(nn.Module):

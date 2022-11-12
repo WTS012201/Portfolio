@@ -88,7 +88,7 @@ $$
 n_{out}=\dfrac{n_{in} + 2p - k}{s} + 1
 $$
 
-This is a very basic example, but it highlights the intuition behind convolution. We're essentially trying to exaggerate a feature we're looking for in an image. In this case the vertical edge became more pronounced in the output image.
+This is a very basic example, but it highlights the intuition behind convolution. We're essentially trying to exaggerate a feature we're looking for in an image. In this case, the vertical edge became more pronounced in the output image.
 
 In computer vision, this process is used for image filtering and there are a variety of filters used for specific purposes such as edge detection and noise removal. When we're dealing with image classification, it would be difficult to come up with the values of a filter for picking out parts of a body such as hair. Furthermore, hair can come in many different shapes and colors. This is where convolution in neural networks excel at. We can have the neural network come up with the best values (weights) for a filter automatically with a convolutional layer. Additionally, we can apply as many filters as we want at each layer.
 
@@ -546,54 +546,8 @@ The original VGG didn't include batchnorm operations in the model, so that is so
 
 I didn't include softmax on the output because I'm using cross entropy loss (CEL) as my loss function. Generally, the combination of both would introduce vanishing gradient problem because PyTorch incorporates softmax into CEL by default. See <a href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html">torch.nn.CrossEntropyLoss<a> 
 
-<!-- 
-$$
-L(\hat{y}, y)=-\sum_{c=1}^{C}y_{c}w_{c}\log(\hat{y}_{c})\\
-$$
 
-$$
-\bullet \ \text{C is the number of class labels} \\
-\bullet \ {y}\ \text{is a one-hot vector indicating the ground truth} \\
-\bullet \ w \ \text{is a vector containing the weights for penalizing a class} \\
-$$
-
-$$
-\hat{y_{c}} = \sigma(z)_{c} = 
-\frac{\exp{(z_{c})}}{\sum\nolimits_{i=1}^{C}\exp{(z_{i})}}
-$$
-
-$$
-\bullet \ \hat{y}_{c} \
-\text{is the predicted probability of the output layer by applying}\\
-\text{softmax } \sigma \ \text {on the output vector } z \ \text{from the network for class } c
-$$
-
-Since $${y}$$ will only contain one instance of a certain class in an image, we can represent the loss function as
-
-$$
-L(\hat{y}, y)=-\log(\hat{y}_{t})=-\log(\sigma({z})_{t})=-w_{t}\log\left(\frac{\exp{(z_{t})}}{\sum\nolimits_{i=1}^{C}\exp{(z_{i})}}\right)\\
-$$
-
-$$
-\text{where } t \ \text{is the target } (y_{t}= 1) 
-$$
-
-Similar to normalizing the image values, we're squishing the values from the output vector into a range [0, 1] and sums to 1 in order to achieve stability when computing derivatives for backpropagation. If I had included softmax as part of the output layer...
-
-
-$$
-Forward: \hspace{10pt} L(\hat{y}, y)=-\log(\sigma(\sigma({z})))_{t}
-$$
-
-$$
-Backward: \hspace{10pt} \nabla_{w} L(\hat{y}, y)
-$$
-
-We only need to compute two partial derivatives, one for when $$y_{c} = 1$$ and one for $$y_{c} = 0$$. Take derivative with respect to output neuron $$z_{c}$$.
-
-$$y_{c} = 1: -\frac{\partial \log(\sigma(z)_{c})}{\partial z_{c}} = -w_{c}$$ -->
-
-I had orignally included it to see what my results would look like, the loss would struggled to decrease, the model wouldn't improve.
+I had orignally included it to see what my results would look like. the loss struggled to decrease and the model wouldn't improve.
 
 {% highlight ruby %}
 class VGG(nn.Module):

@@ -1,0 +1,18 @@
+---
+layout: post
+excerpt_separator: <!--more-->
+permalink: /blog/datamining/naive_bayes
+title: Naive Bayes Classifier
+date: 2022-11-13
+category: 0
+image: /content/cv/stitching/extremas.png
+---
+
+**Naive Bayes Classifiers** are used.
+
+* TOC
+{:toc}
+
+# **Theoretical Primer**
+
+

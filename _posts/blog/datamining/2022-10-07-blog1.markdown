@@ -5,6 +5,7 @@ permalink: /blog/datamining/kaggle_titanic
 title: Titanic - Machine Learning from Disaster
 date: 2022-10-07
 category: 0
+image: /content/datamining/titanic/titanic_chart.png
 ---
 
 ### **Introduction**
@@ -156,7 +157,7 @@ plt.axis([-1, 8, 0, 100])
 plt.show()
 {% endhighlight %}
 
-![](/content/datamining/titanic_chart.png)
+![](/content/datamining/titanic/titanic_chart.png)
 
 {% highlight ruby %}
 age_group = all_data.groupby(["Pclass"])["Age"].mean().astype(int)

@@ -5,6 +5,7 @@ permalink: /blog/computer_vision/Image_Stitching
 title: Image Stitching
 date: 2022-09-22
 category: 1
+image: /content/cv/stitching/featured.png
 ---
 
 **Image Stitching** is a process that involves a sequence of algorithms to produce a scene from multiple images<!--more-->
@@ -38,7 +39,7 @@ where $$L$$ is the convolution of image $$I$$ and 2D Gaussian $$G$$ with standar
 SIFT applies this multiple times to the same image with progessively higher scale values to create an octave. The scale parameter will increase by $$\sigma_{i}=k\sigma_{i-1}$$. Then it resizes the image by half and repeats the same process for the next octave.  
 
 
-![octaves.png](/content/cv/octaves.png)
+![octaves.png](/content/cv/stitching/octaves.png)
 
 ## Difference of Gaussian (DoG)
 
@@ -65,19 +66,19 @@ $$
 \frac{G(x,y,\sigma)}{\sigma^{2}}\left(\frac{x^2 + y^2}{\sigma^2} - 2\right)
 $$
 
-Scale normalized LoG is obtained by eliminating the $$\sigma^{-2}$$ term:
-
-$$
-\sigma^{2} \left[ \nabla^{2}G = \frac{G(x,y,\sigma)}{\sigma^{2}}\left(\frac{x^2 + y^2}{\sigma^2} - 2\right) \right] \\
-\underbrace{\sigma^{2}\nabla^{2}G}_\textrm{Scale Norm LoG} = G(x,y,\sigma)\left(\frac{x^2 + y^2}{\sigma^2} - 2\right)
-$$
-
 Then the derivative of the Gaussian kernel can be expressed as:
 
 $$
 \begin{align}
 \frac{\partial G}{\partial \sigma} &= \sigma \left[ \frac{G(x,y,\sigma)}{\sigma^{2}} \left(\frac{x^2 + y^2}{\sigma^2} - 2\right) \right] = \sigma \nabla^{2}G 
 \end{align}
+$$
+
+Scale normalized LoG is obtained by eliminating the $$\sigma^{-2}$$ term:
+
+$$
+\sigma^{2} \left[ \nabla^{2}G = \frac{G(x,y,\sigma)}{\sigma^{2}}\left(\frac{x^2 + y^2}{\sigma^2} - 2\right) \right] \\
+\underbrace{\sigma^{2}\nabla^{2}G}_\textrm{Scale Norm LoG} = G(x,y,\sigma)\left(\frac{x^2 + y^2}{\sigma^2} - 2\right)
 $$
 
 Using this, we can take the finite difference approximation using nearby scales $$\sigma$$ and $$k\sigma$$ to discover the relationship between scale-normalized LoG and DoG. 
@@ -90,13 +91,13 @@ $$
 \end{align}
 $$
 
-This shows that when taking the difference between two Gaussians with scales differing by constant factor $$k$$, the $$\sigma^{2}$$ scale normalization required for scale invariant LoG is automatically incorperated. Factor (k - 1) remains constant for every $$\sigma$$ which means that it will not influence the extrema location.
+This shows that when taking the difference between two Gaussians with scales differing by constant factor $$k$$, the $$\sigma^{2}$$ scale normalization required for scale invariant LoG is automatically incorperated. Factor (k - 1) remains constant for every $$\sigma$$ which means that it will not influence extrema locations.
 
-![DoG.png](/content/cv/DoG.png)
+![DoG.png](/content/cv/stitching/DoG.png)
 
 ## Local Extrema Detection
 
 Now that we have a good representation of regions with rapid changes in the image from DoG, we can locate the extrema of a DoG image by applying the following. For detecting an extrema, points are sampled in the image and then compared to its eight neighbors and nine neighbors in the previous scale and next scale. It is selected as a keypoint candidate if the value is greater than or less than all of its neighbors.
 
 
-![extremas.png](/content/cv/extremas.png)
+![extremas.png](/content/cv/stitching/extremas.png)

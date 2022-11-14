@@ -7,36 +7,35 @@ layout: default
   <h1 class="page-heading">{{ page.title }}</h1>
   {%- endif -%} {{ content }} {%- if site.posts.size > 0 -%}
   <h2 class="post-list-heading">{{ page.list_title | default: "Posts" }}</h2>
-  <ul class="post-list">
+  <h2 class="post-list-heading" style="font-weight: bold">Concepts in Computer Vision</h2>
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 15px; margin-bottom: 50px">
     {%- for post in site.posts -%}
-    <li>
-      {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y"-%}
-      {%- if post.category == 0 -%}
-      <div>
-        <h2 class="post-list-heading">CSE 4334 Data Mining</h2>
-        <span class="post-meta">{{ post.date | date: date_format }}</span>
-        <h3>
-          <a class="post-link" href="{{ post.url | relative_url }}">
-            {{ post.title | escape }}
-          </a>
-        </h3>
-        {%- if site.show_excerpts -%} {{ post.excerpt }} {%- endif -%}
-      </div>
-      {%- else if post.category == 1 -%}
-      <div>
-        <h2 class="post-list-heading">Computer Vision</h2>
-        <span class="post-meta">{{ post.date | date: date_format }}</span>
-        <h3>
-          <a class="post-link" href="{{ post.url | relative_url }}">
-            {{ post.title | escape }}
-          </a>
-        </h3>
-        {%- if site.show_excerpts -%} {{ post.excerpt }} {%- endif -%}
-      </div>
+      {%- if post.category == 1 -%}
+        <a class="post-link" href="{{ post.url | relative_url }}" style="text-align: center">
+          <h3 style="box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px; min-height: 250px;">
+            <div style="text-align: center; color: black; font-size: 24px">
+              {{ post.title | escape }}
+            </div>
+            <img src="{{ site.baseurl }}{{ post.image }}">
+          </h3>
+        </a>
       {%- endif -%}
-    </li>
     {%- endfor -%}
-  </ul>
-
+  </div>
+  <h2 class="post-list-heading" style="font-weight: bold">CSE 4334 Data Mining Blog Assignments</h2>
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 15px;">
+    {%- for post in site.posts -%}
+      {%- if post.category == 0 -%}
+        <a class="post-link" href="{{ post.url | relative_url }}" style="text-align: center">
+          <h3 style="box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px; min-height: 250px;">
+            <div style="text-align: center; color: black; font-size: 24px">
+              {{ post.title | escape }}
+            </div>
+            <img src="{{ site.baseurl }}{{ post.image }}" >
+          </h3>
+        </a>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
   {%- endif -%}
 </div>

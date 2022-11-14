@@ -5,6 +5,7 @@ permalink: /blog/datamining/conv_nets
 title: Image Classification with ConvNets
 date: 2022-10-22
 category: 0
+image: /content/datamining/conv_nets/featured.png
 ---
 
 **Convolutional neural networks**  have played a critical role in solving image classification problems and is typically the first type of architecture considered for building image classifiers.<!--more-->
@@ -12,7 +13,7 @@ category: 0
 * TOC
 {:toc}
 
-### **What is convolution?**
+## **What is convolution?**
 It's important to understand the key component that drives convolutional neural networks and why it performs so well in image classification. The convolutional layer is the defining feature of this type of neural network. This layer is responsible for learning features that belong to a class. It accomplishes this by applying a filter (kernel) on the receptive fields (local regions) of the input image, resulting in a feature map. Mathematically, this operation is done by applying the element-wise product between all of the receptive fields and the kernel, then summing every element in each receptive field, and finally mapping the summed values to the feature map.
 
 For example:
@@ -80,7 +81,7 @@ c_{ij} = \sum_{i}\sum_{j} (S_{ij} \odot B)_{ij}
 % \ \text{and }
 $$
 
-![conv.gif](/content/datamining/conv.gif)
+![conv.gif](/content/datamining/conv_nets/conv.gif)
 
 The size of the feature map $$n_{out}$$ depends on the size of the input $$n_{in}$$, stride $$s$$, padding $$p$$, and kernel $$k$$.  In the example, $$n_{in}$$ = 4 reduced to $$n_{out}$$ = 2, but typically we want $$n_{in}$$ = $$n_{out}$$ as you'll see later.
 
@@ -115,7 +116,7 @@ $$
 
 These two components are essential for any convolutional network, so understanding how each work will make understanding ConvNets simple.
 
-### **Convolutional Neural Networks with PyTorch**
+## **Convolutional Neural Networks with PyTorch**
 I'll be demonstrating my attempt at CNNs with
 <a href="https://www.kaggle.com/datasets/maricinnamon/caltech101-airplanes-motorbikes-schooners">Caltech101 | Airplanes, Motorbikes & Schooners<a> 
 
@@ -205,7 +206,7 @@ df
 
 **Output**
 
-![](/content/datamining/conv_nets_bar.png)
+![](/content/datamining/conv_nets/conv_nets_bar.png)
 
 {% highlight ruby %}
 Class_weights
@@ -486,9 +487,9 @@ plot_losses(runs)
 plot_accuracies(runs)
 {% endhighlight %}
 
-[ ![](/content/datamining/conv_nets_plot1.png) ](/content/datamining/conv_nets_plot1.png)
+[ ![](/content/datamining/conv_nets/conv_nets_plot1.png) ](/content/datamining/conv_nets/conv_nets_plot1.png)
 
-[ ![](/content/datamining/conv_nets_plot2.png) ](/content/datamining/conv_nets_plot2.png)
+[ ![](/content/datamining/conv_nets/conv_nets_plot2.png) ](/content/datamining/conv_nets/conv_nets_plot2.png)
 
 
 {% highlight ruby %}
@@ -529,11 +530,11 @@ Expanding the number of feature maps at each conv layer doesn't seem to have any
 
 I also tried implementing a few popular ConvNet architectures that interested me for fun.
 
-### **VGGNet implementation**
+## **VGGNet implementation**
 
 [1] <a href="https://arxiv.org/abs/1409.1556">Very Deep Convolutional Networks for Large-Scale Image Recognition<a> 
 
-![vgg_arch.png](/content/datamining/vgg_arch.png)
+![vgg_arch.png](/content/datamining/conv_nets/vgg_arch.png)
 
 **Notes**
 - Conv layers use 3x3 kernel with the exception of C
@@ -548,6 +549,8 @@ I didn't include softmax on the output because I'm using cross entropy loss (CEL
 
 
 I had orignally included it to see what my results would look like. the loss struggled to decrease and the model wouldn't improve.
+
+### **Model**
 
 {% highlight ruby %}
 class VGG(nn.Module):
@@ -602,7 +605,9 @@ class VGG(nn.Module):
         return self.classifier(self.net(x))
 {% endhighlight %}
 
-The model is actually very basic and structured similarly to how I designed my vanilla CNN architecture. The main distinction being the number of conv layers used. Also, a conv layer will expand the number of feature maps less frequently and only by a factor of 2 starting from 64.
+The model is very basic and structured similarly to how I designed my vanilla CNN architecture. The main distinction being the number of conv layers used. Also, a conv layer will expand the number of feature maps less frequently and only by a factor of 2 starting from 64.
+
+### **Evaluation**
 
 {% highlight ruby %}
 runs_vgg = []
@@ -668,7 +673,7 @@ def plot_runs(runs):
 plot_runs(runs_vgg)
 {% endhighlight %}
 
-![vgg_arch.png](/content/datamining/vgg_plot1.png)
+![vgg_arch.png](/content/datamining/conv_nets/vgg_plot1.png)
 
 Looking at the accuracy for the validation set, there are massive dips in some of the models. If you look closely, you can correspond these dips to an increase on the loss curve at the same epoch, which would explain the drop in accuracy.
 
@@ -696,13 +701,13 @@ VGG-19E    98.496%
 dtype: object
 {% endhighlight %}
 
-### **GoogLeNet implementation**
+## **GoogLeNet implementation**
 
 [2] <a href="https://arxiv.org/abs/1409.4842.pdf">Going Deeper with Convolutions<a> 
 
 **Architecture**
 
-![google_arch.png](/content/datamining/google_arch.png)
+![google_arch.png](/content/datamining/conv_nets/google_arch.png)
 
 The changes I made from the original VGG net architecture can pratically be applied here. Original GoogLeNet didn't use batchnorms, it used softmax, and trained on 224x224 images.
 
@@ -723,9 +728,9 @@ class Conv(nn.Module):
         return self.conv(x)
 {% endhighlight %}
 
-**Inception block**
+### **Inception block**
 
-![inception_block.png](/content/datamining/inception_block.png)
+![inception_block.png](/content/datamining/conv_nets/inception_block.png)
 
 This block is responsible for deciding which kernel sizes contribute the most on a given input in the network. Since using 3x3 and 5x5 filters can be computationally expensive, they apply 1x1 filters before them to reduce the number of input features for those conv layers.
 
@@ -759,6 +764,8 @@ class Inception(nn.Module):
     def forward(self, x):
         return torch.cat([b(x) for b in self.inc_block], dim=1)
 {% endhighlight %}
+
+### **Model**
 
 I constructed the layers for the network using the same values in the same order from the table above.
 
@@ -808,6 +815,8 @@ class GoogLeNet(nn.Module):
         return x
 {% endhighlight %}
 
+### **Evaluation**
+
 {% highlight ruby %}
 runs_google = []
 batch_size = 64
@@ -848,7 +857,7 @@ print(f"GoogLeNet accuracy: {train_info[0][-1]:.3f}")
 GoogLeNet accuracy: 99.000
 {% endhighlight %}
 
-![google_net_plot1.png](/content/datamining/google_net_plot1.png)
+![google_net_plot1.png](/content/datamining/conv_nets/google_net_plot1.png)
 
 ### **References**
 

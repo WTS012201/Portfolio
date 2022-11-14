@@ -8,7 +8,7 @@ category: 0
 image: /content/cv/stitching/extremas.png
 ---
 
-**Naive Bayes Classifiers** are notorious for performing well in text classification problems. There are several reasons as to why they are well suited when dealing with text input data which we'll investigate.
+**Naive Bayes Classifiers** are notorious for performing well in text classification problems. There are several reasons as to why they are well suited for classifying text.
 
 * TOC
 {:toc}
@@ -171,20 +171,20 @@ def compute_occurrences(self):
 
 The first loop is deciding which words belongs to a class (the vocabulary of a class). It will omit words that are very uncommon and not in the alphabet.
 
-Second loop is doing word occurence calculations. Notice that I'm not readding words that have already shown up in a sentence because class size is defined by number of sentences rather than number of words.
+Second loop is doing word occurence calculations. Notice that I'm not readding words that have already shown up in a sentence because class size is defined by number of sentences rather than number of words. I will explain the use of the alpha variable later.
 
 ### **Computing Class Predictions**
 
 Now that we have the probabilities of a word appearing in a particular class, we can calulate the product for each word in the sentence we want to predict to get the **likelihood**. Then multiply the **likelihood** by the **prior** of the class to get the **posterior** probability. Do this for each class and take the class with the highest **posterior** probability as our prediction.
 
-Recall:
+Recall
 $$
 \underbrace{P(C | S)}_\textrm{Posterior} \propto \underbrace{P(C)}_\textrm{Prior}\underbrace{\prod_{w\in S}P(w|C)}_\textrm{Likelihood}
 $$
 
 {% highlight ruby %}
 def __call__(self, sentence):
-    posterior = (None, 0)
+    max_posterior = (None, 0)
 
     for class_type, prior in self.priors.items():
         sentence = sentence.lower()
@@ -201,10 +201,10 @@ def __call__(self, sentence):
             else:
                 likelihood *= 0
 
-        if likelihood > posterior[1]:
-            posterior = (class_type, likelihood)
+        if likelihood > max_posterior[1]:
+            max_posterior = (class_type, likelihood)
     
-    return posterior
+    return max_posterior
 {% endhighlight %}
 
 ## **Putting Everything Together**
@@ -281,7 +281,7 @@ class NBC():
         return vocab_class
 
     def __call__(self, sentence):
-        posterior = (None, 0)
+        max_posterior = (None, 0)
 
         for class_type, prior in self.priors.items():
             sentence = sentence.lower()
@@ -298,9 +298,154 @@ class NBC():
                 else:
                     likelihood *= 0
 
-            if likelihood > posterior[1]:
-                posterior = (class_type, likelihood)
+            if likelihood > max_posterior[1]:
+                max_posterior = (class_type, likelihood)
         
-        return posterior
+        return max_posterior
 {% endhighlight %}
 
+## **Model Evaluation**
+
+To see how the model performs, just total the number of correct predictions from the test size and compared it with the size of the test set to get the accuracy.
+
+{% highlight ruby %}
+def eval(model, data):
+    score = 0
+
+    for i in range(data.shape[0]):
+        pred, _ = model(data.iloc[i].New_Sentence)
+        score += pred == data.iloc[i].Type
+
+    return score / data.shape[0]
+{% endhighlight %}
+
+## **Smoothing**
+
+{% highlight ruby %}
+model = NBC(train_data, smoothing=False)
+print(f"Accuracy: {eval(model, val_data)} ")
+{% endhighlight %}
+
+
+**output**
+{% highlight ruby %}
+Accuracy: 0.37965281975991017
+{% endhighlight %}
+
+Since we have six class labels total, it appears to be doing better than just chance. However, this isn't the performance we want. Whenever there's a word that isn't in a class vocabulary from the training data, the posterior probability becomes zero. We could have a pretty good prediction for a class up until there is a word that isn't in the class. To fix this, we can incorporate **Laplace Smoothing** so that we're never eliminating a prediction based on a word not contained in the class.
+
+without smoothing:
+
+$$P(w|c) = \frac{0}{N} = 0$$
+
+with smoothing:
+
+$$P(w|c) = \frac{0 + \alpha}{N + \alpha K} \quad \alpha > 0$$
+
+{% highlight ruby %}
+model = NBC(train_data, smoothing=True)
+print(f"Accuracy: {eval(model, val_data)} ")
+{% endhighlight %}
+
+**output**
+
+{% highlight ruby %}
+Accuracy: 0.6546333880300544 
+{% endhighlight %}
+
+Using **Laplace Smoothing**, I was able to significantly improve the model accuracy by roughly 30%. 
+
+## **Analyzing class accuracies**
+
+Now that we have the overall performance of the model, let's see how the model is performing on each class.
+
+{% highlight ruby %}
+def class_perf(model, data):
+    class_performance = {}
+    for class_type in model.priors.keys():
+        class_performance[class_type] = \
+            eval(model, val_data[val_data.Type == class_type])
+
+    df_perf = pd.Series(class_performance)
+    print("Accuracy by class:")
+    print(df_perf)
+{% endhighlight %}
+
+**output**
+
+{% highlight ruby %}
+Accuracy by class:
+Responsibility    0.882784
+Requirement       0.320044
+Skill             0.383171
+SoftSkill         0.642973
+Education         0.860045
+Experience        0.898190
+dtype: float64
+{% endhighlight %}
+
+We can see that the model is not performing well for sentences of type `Requirement` and `Skill`. Looking at which words contribute the most to the prediction for the classes may give us some insight into why this is the case.
+
+{% highlight ruby %}
+top_words = {}
+for class_type, class_occ in model.occurrences.items():
+    top_words[class_type] = [*class_occ.keys()][:10]
+
+top_class_words = pd.DataFrame(top_words)
+top_class_words.index += 1
+top_class_words
+{% endhighlight %}
+
+The values were sorted in desecending order during training, so we can just take the first ten values.
+
+![df.png](/content/datamining/nbc/df.png)
+
+The column for the top ten words in `Requirements` is very similar to the column for `Skill`. This indicates that their is a lot overlap between the occurences for certain words in `Requirement` sentences and `Skill` sentences.
+
+I tried messing around with one of the column values for these words to see if we could improve the performance. I found that if I set some of the words in `Requirements` to one, it improved the model by 3%.
+
+{% highlight ruby %}
+import copy
+
+model_copy = copy.deepcopy(model)
+req = model_copy.occurrences["Requirement"]
+
+ignore = ["and", "with", "in", "of", "or", "experience"]
+for word in ignore:
+    req[word] = 1
+{% endhighlight %}
+
+{% highlight ruby %}
+print(f"Accuracy: {eval(model_copy, val_data)} ")
+class_perf(model_copy, val_data)
+{% endhighlight %}
+
+I believe this works because it's essentially ignoring the word when computing the **likelihood**. Since we do this for one of the class, the model is able to distinguish between `Requirement` and `Skill` class better.
+
+**output**
+{% highlight ruby %}
+Accuracy: 0.6897832282580534 
+Accuracy by class:
+Responsibility    0.856810
+Requirement       0.607169
+Skill             0.311044
+SoftSkill         0.572429
+Education         0.838600
+Experience        0.867647
+dtype: float64
+{% endhighlight %}
+
+{% highlight ruby %}
+print(f"Accuracy: {eval(model, test_data)} ")
+print(f"Accuracy: {eval(model_copy, test_data)} ")
+{% endhighlight %}
+
+Now let's see if the changes we made influenced the performance on the test set.
+
+**output**
+{% highlight ruby %}
+Original Accuracy: 0.650967996839194 
+Modified Accuracy: 0.6809956538917424 
+{% endhighlight %}
+
+### **Closing Thoughts** 

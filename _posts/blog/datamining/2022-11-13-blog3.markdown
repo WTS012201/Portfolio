@@ -73,6 +73,8 @@ $$
 
 # **Naive Bayes Classifier with Python**
 I'll be demonstrating my implementation of Naive Bayes Classifier for the <a href="https://www.kaggle.com/datasets/gaveshjain/ford-sentence-classifiaction-dataset?resource=download">Ford Sentence Classification Dataset</a>.
+The notebook for this blog is available <a href="https://github.com/WTS012201/CSE4334/blob/main/assignment3/nbc.ipynb">Here<a>
+
 
 ## **Dataset**
 

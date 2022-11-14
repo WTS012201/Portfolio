@@ -5,7 +5,7 @@ permalink: /blog/datamining/naive_bayes
 title: Naive Bayes Classifier
 date: 2022-11-13
 category: 0
-image: /content/cv/stitching/extremas.png
+image: /content/datamining/nbc/featured.png
 ---
 
 **Naive Bayes Classifiers** are widely used in text classification problems. There are several reasons as to why they are well suited for classifying text which will be covered in this blog.

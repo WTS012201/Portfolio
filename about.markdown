@@ -6,7 +6,7 @@ redirect_from: /Portfolio/
 ---
 
 <p align="center">
-  <img src="https://github.com/WTS012201/Portfolio/blob/main/content/me.PNG?raw=true" height="auto" width="300" />
+  <img src="https://github.com/WTS012201/Portfolio/blob/main/content/about/me.PNG?raw=true" height="auto" width="300" />
 </p>
 
 # Introduction
@@ -28,7 +28,7 @@ I'm an undergraduate student in my senior year working towards my Bachelors in C
 - I used OpenCV with Tesseract for OCR with Qt for the user interface
 
 <p align="center">
-  <img src="https://github.com/WTS012201/Portfolio/blob/main/content/demo1.gif?raw=true" />
+  <img src="https://github.com/WTS012201/Portfolio/blob/main/content/about/demo1.gif?raw=true" />
 </p>
 
 # [Project 2: Fitness and Training App (FAT)](https://github.com/WTS012201/FAT-App)
@@ -38,7 +38,7 @@ I'm an undergraduate student in my senior year working towards my Bachelors in C
 - Practiced version control using a remote repository through github
 - Our team used android studio for developing the app
 
-![](/content/demo2.gif)
+![](/content/about/demo2.gif)
 
 # Currently working on
 
@@ -51,4 +51,4 @@ The app will allow users to input various details about their catch and upload i
 - Languages: C, C++, Python, Javascript, Typescript, and Java
 - Familiar with: HTML, CSS, ReactJS, NodeJS, Graphql, PostgreSQL, Linux, Git, Scrum/Agile methodologies, Qt, Jupyter, OpenCV, Pointcloud, Tensorflow, PyTorch, and Android Studio
 
-[Resume](/content/resume.pdf)
+[Resume](/content/about/resume.pdf)

@@ -8,7 +8,7 @@ category: 0
 image: /content/cv/stitching/extremas.png
 ---
 
-**Naive Bayes Classifiers** are notorious for performing well in text classification problems. There are several reasons as to why they are well suited for classifying text.
+**Naive Bayes Classifiers** are widely used in text classification problems. There are several reasons as to why they are well suited for classifying text which will be covered in this blog.
 
 * TOC
 {:toc}
@@ -33,7 +33,7 @@ and $$ P(C \displaystyle \cap S) = P(S \displaystyle \cap C) $$, then $$\dots$$
 
 $$ P(C \displaystyle \cap S) = P(S \displaystyle \cap C) = P(S | C)P(C)$$
 
-Now we can substitute the unknown term with terms that can be determine and arrive at Bayes' Theorem.
+Now we can substitute the unknown term with terms that can be determine and arrive at **Bayes' Theorem**:
 
 $$
 P(C | S) = \frac{P(S|C)P(C)}{P(S)}
@@ -41,7 +41,7 @@ $$
 
 **What does any of this mean?**
 
-Ultimately, we want to be able to express the probability that a sentence belongs to a certain class. To do this, we also need to consider that every feature is independent from each other. Bayes' theorem accounts for this.
+Ultimately, we want to be able to express the probability that a sentence belongs to a certain class. To do this, we also need to consider that every feature is independent from each other. **Bayes' Theorem** accounts for this.
 
 
 The term $$P(C)$$ is commonly referred to as the "prior" and $$P(S)$$ as the "evidence".
@@ -76,7 +76,10 @@ I'll be demonstrating my implementation of Naive Bayes Classifier for the <a hre
 
 ## **Dataset**
 
-The dataset provides texts for job descriptions as `New_Sentence` and their types as `Type`. The goal of the classifier is to identify sentence as class type Responsibility, Requirement, Skill, SoftSkill, Education or Experience. I split them into train, validation, and test sets below. 
+The dataset provides texts for job descriptions as `New_Sentence` and their types as `Type`. The goal of the classifier is to identify sentence as class type `Responsibility, Requirement, Skill, SoftSkill, Education or Experience`.
+
+
+I split data into train, validation, and test sets below. 
 
 {% highlight ruby %}
 import pandas as pd
@@ -95,7 +98,7 @@ test_data = data.loc[int(0.8 * size):]
 
 ## **Building the Classifier**
 
-For this, I'll be showing you the process of building the Naive Bayes Classifier class I came up with.
+I'll be showing you the process of building the Naive Bayes Classifier class I came up with.
 
 ### **Computing Priors**
 
@@ -169,7 +172,7 @@ def compute_occurrences(self):
     return vocab_class
 {% endhighlight %}
 
-The first loop is deciding which words belongs to a class (the vocabulary of a class). It will omit words that are very uncommon and not in the alphabet.
+The first loop is deciding which words belongs to a class (the vocabulary of a class). It will omit words that are very uncommon and characters not in the alphabet.
 
 Second loop is doing word occurence calculations. Notice that I'm not readding words that have already shown up in a sentence because class size is defined by number of sentences rather than number of words. I will explain the use of the alpha variable later.
 
@@ -306,7 +309,7 @@ class NBC():
 
 ## **Model Evaluation**
 
-To see how the model performs, just total the number of correct predictions from the test size and compared it with the size of the test set to get the accuracy.
+To see how the model performs, total the number of correct predictions and compared it with the size of the validation set to get the accuracy.
 
 {% highlight ruby %}
 def eval(model, data):
@@ -319,7 +322,7 @@ def eval(model, data):
     return score / data.shape[0]
 {% endhighlight %}
 
-## **Smoothing**
+### **Smoothing**
 
 {% highlight ruby %}
 model = NBC(train_data, smoothing=False)
@@ -332,7 +335,7 @@ print(f"Accuracy: {eval(model, val_data)} ")
 Accuracy: 0.37965281975991017
 {% endhighlight %}
 
-Since we have six class labels total, it appears to be doing better than just chance. However, this isn't the performance we want. Whenever there's a word that isn't in a class vocabulary from the training data, the posterior probability becomes zero. We could have a pretty good prediction for a class up until there is a word that isn't in the class. To fix this, we can incorporate **Laplace Smoothing** so that we're never eliminating a prediction based on a word not contained in the class.
+Since the dataset has six class labels total, it appears to be doing better than just chance. However, this isn't the performance we want. Whenever there's a word that isn't in a class vocabulary from the training data, the posterior probability becomes zero. We could have a pretty good prediction for a class up until there is a word that isn't in the class. To fix this, we can incorporate **Laplace Smoothing** so that we're never eliminating a prediction based on a word not occuring in the class.
 
 without smoothing:
 
@@ -355,7 +358,7 @@ Accuracy: 0.6546333880300544
 
 Using **Laplace Smoothing**, I was able to significantly improve the model accuracy by roughly 30%. 
 
-## **Analyzing class accuracies**
+### **Analyzing class accuracies**
 
 Now that we have the overall performance of the model, let's see how the model is performing on each class.
 
@@ -384,7 +387,7 @@ Experience        0.898190
 dtype: float64
 {% endhighlight %}
 
-We can see that the model is not performing well for sentences of type `Requirement` and `Skill`. Looking at which words contribute the most to the prediction for the classes may give us some insight into why this is the case.
+The model is not performing well for sentences of type `Requirement` and `Skill`. Looking at which words contribute the most to the prediction for the classes may give us some insight into why this is the case.
 
 {% highlight ruby %}
 top_words = {}
@@ -402,7 +405,7 @@ The values were sorted in desecending order during training, so we can just take
 
 The column for the top ten words in `Requirements` is very similar to the column for `Skill`. This indicates that their is a lot overlap between the occurences for certain words in `Requirement` sentences and `Skill` sentences.
 
-I tried messing around with one of the column values for these words to see if we could improve the performance. I found that if I set some of the words in `Requirements` to one, it improved the model by 3%.
+I tried messing around with one of the column values for these words to see if it improves the performance. I found that if I set some of the words in `Requirements` to 1, it improved the model by 3%.
 
 {% highlight ruby %}
 import copy
@@ -420,8 +423,6 @@ print(f"Accuracy: {eval(model_copy, val_data)} ")
 class_perf(model_copy, val_data)
 {% endhighlight %}
 
-I believe this works because it's essentially ignoring the word when computing the **likelihood**. Since we do this for one of the class, the model is able to distinguish between `Requirement` and `Skill` class better.
-
 **output**
 {% highlight ruby %}
 Accuracy: 0.6897832282580534 
@@ -435,12 +436,14 @@ Experience        0.867647
 dtype: float64
 {% endhighlight %}
 
+I believe this works because it's essentially ignoring the words when computing the **likelihood**. Since we do this for one of the classes, the model is able to differentiate `Requirement` and `Skill` class better.
+
+Now let's see if the changes we made influenced the performance on the test set.
+
 {% highlight ruby %}
 print(f"Accuracy: {eval(model, test_data)} ")
 print(f"Accuracy: {eval(model_copy, test_data)} ")
 {% endhighlight %}
-
-Now let's see if the changes we made influenced the performance on the test set.
 
 **output**
 {% highlight ruby %}
@@ -448,4 +451,6 @@ Original Accuracy: 0.650967996839194
 Modified Accuracy: 0.6809956538917424 
 {% endhighlight %}
 
-### **Closing Thoughts** 
+## **Closing Thoughts** 
+
+By using a **Naive Bayes Classifier**, I was able to predict six different types of sentences for the dataset with 68% accuracy. Considering all of the similarities between the different types of sentences in the dataset, I expected this performance using Naive Bayes. I was able to slightly overcome this by modifying some of the most influential words for a particular class, improving the original model by roughly 3%.

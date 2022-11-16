@@ -20,7 +20,7 @@ An algorithm that is commonly used for this type of problem is SIFT (Scale Invar
 
 How it works...
 
-## **Construct scale-spaces**
+## **Scale-space Construction**
 
 When looking at an object in the real world, it is much easier to give more descriptions of the object when it is right in front of your eyes as opposed to being further away. A person standing a few feet away is much easier to describe than a person that is 500 feet away. A scale space attempts to remove descriptors of an object so that it's indistinguishable at any size, meaning we can give the same description from different perspectives.
 

@@ -6,7 +6,7 @@ layout: default
  {{ content }}
   {%- if site.posts.size > 0 -%}
   <h2 class="post-list-heading" style="font-weight: bold">Concepts in Computer Vision</h2>
-  <div style="display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 15px; row-gap: 15px;">
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 15px; row-gap: 15px; margin-bottom: 40px;">
     {%- for post in site.posts -%}
       {%- if post.category == 1 -%}
         <div style="box-shadow: rgba(0, 0, 0, 0.24) 3px 3px 8px 3px; border-radius: 10px;">

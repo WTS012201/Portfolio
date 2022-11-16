@@ -20,7 +20,7 @@ An algorithm that is commonly used for this type of problem is SIFT (Scale Invar
 
 How it works...
 
-## Construct scale-spaces
+## **Construct scale-spaces**
 
 When looking at an object in the real world, it is much easier to give more descriptions of the object when it is right in front of your eyes as opposed to being further away. A person standing a few feet away is much easier to describe than a person that is 500 feet away. A scale space attempts to remove descriptors of an object so that it's indistinguishable at any size, meaning we can give the same description from different perspectives.
 
@@ -41,7 +41,7 @@ SIFT applies this multiple times to the same image with progessively higher scal
 
 ![octaves.png](/content/cv/stitching/octaves.png)
 
-## Difference of Gaussian (DoG)
+## **Difference of Gaussian (DoG)**
 
 The motivation of DoG is to serve as a speedy alternative for blob detection while also maintaining scale invariance. Typically, a scale-normalized Laplacian of Gaussian (LoG) is used for this, but with a bit of clever math, DoG can acheive a good approximation of scale-normalized LoG efficiently as the smoothed image $$L$$ can be used for scale space feature description by basic image subtraction.
 
@@ -91,11 +91,11 @@ $$
 \end{align}
 $$
 
-This shows that when taking the difference between two Gaussians with scales differing by constant factor $$k$$, the $$\sigma^{2}$$ scale normalization required for scale invariant LoG is automatically incorperated. Factor (k - 1) remains constant for every $$\sigma$$ which means that it will not influence extrema locations.
+This shows that when taking the difference between two Gaussians with scales differing by constant factor $$k$$, the $$\sigma^{2}$$ scale normalization required for scale invariant LoG is automatically incorperated. Factor (k - 1) remains constant for every $$\sigma$$ which means that it will not influence extrema locality which is important for the following steps.
 
 ![DoG.png](/content/cv/stitching/DoG.png)
 
-## Local Extrema Detection
+## **Local Extrema Detection**
 
 Now that we have a good representation of regions with rapid changes in the image from DoG, we can locate the extrema of a DoG image by applying the following. For detecting an extrema, points are sampled in the image and then compared to its eight neighbors and nine neighbors in the previous scale and next scale. It is selected as a keypoint candidate if the value is greater than or less than all of its neighbors.
 

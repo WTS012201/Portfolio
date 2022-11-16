@@ -3,37 +3,43 @@ layout: default
 ---
 
 <div class="home">
-  {%- if page.title -%}
-  <h1 class="page-heading">{{ page.title }}</h1>
-  {%- endif -%} {{ content }} {%- if site.posts.size > 0 -%}
-  <h2 class="post-list-heading">{{ page.list_title | default: "Posts" }}</h2>
-  <!-- <h2 class="post-list-heading" style="font-weight: bold">Concepts in Computer Vision</h2>
-  <div style="display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 15px; margin-bottom: 50px">
+ {{ content }}
+  {%- if site.posts.size > 0 -%}
+  <h2 class="post-list-heading" style="font-weight: bold">Concepts in Computer Vision</h2>
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 15px; row-gap: 15px;">
     {%- for post in site.posts -%}
       {%- if post.category == 1 -%}
-        <a class="post-link" href="{{ post.url | relative_url }}" style="text-align: center">
-          <h3 style="box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px; min-height: 250px;">
-            <div style="text-align: center; color: black; font-size: 24px">
-              {{ post.title | escape }}
+        <div style="box-shadow: rgba(0, 0, 0, 0.24) 3px 3px 8px 3px; border-radius: 10px;">
+          <a class="post-link" href="{{ post.url | relative_url }}" style="text-align: center; padding: 0px 10px">
+            <div style="height: 250px; display: flex; align-items: center; border-bottom: 1px solid rgb(224, 224, 224); overflow: hidden; padding: 2px">
+              <img src="{{ site.baseurl }}{{ post.image }}" \>
             </div>
-            <img src="{{ site.baseurl }}{{ post.image }}">
-          </h3>
-        </a>
+            <div style="display: flex; justify-content: center; align-items: center; height: 150px; width: 100%; color: black;">
+              <span>
+                {{ post.title | escape }}
+              </span>
+            </div>
+          </a>
+        </div>
       {%- endif -%}
     {%- endfor -%}
-  </div> -->
-  <h2 class="post-list-heading" style="font-weight: bold">CSE 4334 Data Mining Blog Assignments</h2>
-  <div style="display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 15px;">
+  </div>
+  <h2 class="post-list-heading" style="font-weight: bold">CSE 4334 Data Mining Kaggle Assignments</h2>
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 15px; row-gap: 15px;">
     {%- for post in site.posts -%}
       {%- if post.category == 0 -%}
-        <a class="post-link" href="{{ post.url | relative_url }}" style="text-align: center">
-          <h3 style="box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px; min-height: 250px;">
-            <div style="text-align: center; color: black; font-size: 24px">
-              {{ post.title | escape }}
+        <div style="box-shadow: rgba(0, 0, 0, 0.24) 3px 3px 8px 3px; border-radius: 10px;">
+          <a class="post-link" href="{{ post.url | relative_url }}" style="text-align: center; padding: 0px 10px">
+            <div style="height: 250px; display: flex; align-items: center; border-bottom: 1px solid rgb(224, 224, 224); overflow: hidden; padding: 2px">
+              <img src="{{ site.baseurl }}{{ post.image }}" \>
             </div>
-            <img src="{{ site.baseurl }}{{ post.image }}" >
-          </h3>
-        </a>
+            <div style="display: flex; justify-content: center; align-items: center; height: 150px; width: 100%; color: black; ">
+              <span>
+                {{ post.title | escape }}
+              </span>
+            </div>
+          </a>
+        </div>
       {%- endif -%}
     {%- endfor -%}
   </div>

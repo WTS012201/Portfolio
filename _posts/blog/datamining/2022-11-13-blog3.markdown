@@ -2,7 +2,7 @@
 layout: post
 excerpt_separator: <!--more-->
 permalink: /blog/datamining/naive_bayes
-title: Naive Bayes Classifier
+title: Text Classification with Naive Bayes Classifier
 date: 2022-11-13
 category: 0
 image: /content/datamining/nbc/featured.png

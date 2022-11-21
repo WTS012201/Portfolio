@@ -347,6 +347,8 @@ with smoothing:
 
 $$P(w|c) = \frac{0 + \alpha}{N + \alpha K} \quad \alpha > 0$$
 
+where **N** is the size of a class and **K** is the number of classes
+
 {% highlight ruby %}
 model = NBC(train_data, smoothing=True)
 print(f"Accuracy: {eval(model, val_data)} ")

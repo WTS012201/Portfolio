@@ -2,7 +2,6 @@
 layout: page
 title: About
 permalink: /about/
-redirect_from: /Portfolio/
 ---
 
 <p align="center">
@@ -28,7 +27,7 @@ I'm an undergraduate student in my senior year working towards my Bachelors in C
 - I used OpenCV with Tesseract for OCR with Qt for the user interface
 
 <p align="center">
-  <img src="https://github.com/WTS012201/Portfolio/blob/main/content/about/demo1.gif?raw=true" />
+  <img src="/content/about/me.png" />
 </p>
 
 # [Project 2: Fitness and Training App (FAT)](https://github.com/WTS012201/FAT-App)

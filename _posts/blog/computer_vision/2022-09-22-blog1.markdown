@@ -1,49 +1,41 @@
 ---
 layout: post
 excerpt_separator: <!--more-->
-permalink: /blog/computer_vision/Image_Stitching
-title: Image Stitching
-date: 2022-09-22
+permalink: /blog/computer_vision/SIFT
+title: "Image Stitching - Part 1: Feature Detection with SIFT"
+date: 2022-09-25
 category: 1
 image: /content/cv/stitching/featured.png
 ---
 
-**Image Stitching** is a process that involves a sequence of algorithms to produce a scene from multiple images<!--more-->
+**Image Stitching** is a process that involves a sequence of algorithms to produce a scene from multiple images. I'll be covering each component involved in the process of stitching images in great detail.<!--more-->
 
 * TOC
 {:toc}
 
 # **Feature Detection with SIFT**
-If we want to construct a whole scene given several different images, we must first search for what features one piece shares in common with another piece. These features must also be recognizable from different perspectives. 
-
-An algorithm that is commonly used for this type of problem is SIFT (Scale Invariant Feature Transform). It applies a sequence of mathmetaical operations on an image and reveals what points describe the image the most.
-
-How it works...
+If we want to construct a whole scene given several different images, we must first search for what features one piece shares in common with another piece. These features must also be recognizable from different perspectives. An algorithm that is commonly used for this type of problem is SIFT (Scale Invariant Feature Transform). It applies a sequence of mathematical operations on an image and reveals what points describe the image the most.
 
 ## **Scale-space Construction**
 
-When looking at an object in the real world, it is much easier to give more descriptions of the object when it is right in front of your eyes as opposed to being further away. A person standing a few feet away is much easier to describe than a person that is 500 feet away. A scale space attempts to remove descriptors of an object so that it's indistinguishable at any size, meaning we can give the same description from different perspectives.
+When looking at an object in the real world, it is much easier to give more descriptions of the object when it is right in front of your eyes as opposed to being further away. A person standing a few feet away is much easier to describe than a person that is 500 feet away. A scale-space attempts to remove descriptors of an object so that it's indistinguishable at any size, meaning we can give the same description from different perspectives.
 
-SIFT convolves an image with a 2D Gaussian to produce a scale space defined as: 
-
-$$
-L(x,y,\sigma)=G(x,y,\sigma)\ast I(x,y)
-$$
+SIFT convolves an image with a 2D Gaussian to produce a scale-space defined as: 
 
 $$
+L(x,y,\sigma)=G(x,y,\sigma)\ast I(x,y) \quad \quad
 G(x,y,\sigma)=\frac{1}{2\pi\sigma^{2}} \exp \left(-\frac{x^{2} + y^{2}}{2\sigma^2} \right)
 $$
 
-where $$L$$ is the convolution of image $$I$$ and 2D Gaussian $$G$$ with standard deviation $$\sigma$$ as the scale parameter. Since $$I$$ is discrete, Gaussian $$G$$ is discretized into a kernel to perform the operation in practice.
+where $$L$$ is the convolution of image $$I$$ and 2D Gaussian $$G$$ with standard deviation $$\sigma$$ as the scale parameter. Since $$I$$ is discrete, Gaussian $$G$$ is represented with a kernel to perform the operation in practice.
 
 SIFT applies this multiple times to the same image with progessively higher scale values to create an octave. The scale parameter will increase by $$\sigma_{i}=k\sigma_{i-1}$$. Then it resizes the image by half and repeats the same process for the next octave.  
 
+[![octaves.png](/content/cv/stitching/octaves.png)](/content/cv/stitching/octaves.png)
 
-![octaves.png](/content/cv/stitching/octaves.png)
+## **Difference of Gaussian**
 
-## **Difference of Gaussian (DoG)**
-
-The motivation of DoG is to serve as a speedy alternative for blob detection while also maintaining scale invariance. Typically, a scale-normalized Laplacian of Gaussian (LoG) is used for this, but with a bit of clever math, DoG can acheive a good approximation of scale-normalized LoG efficiently as the smoothed image $$L$$ can be used for scale space feature description by basic image subtraction.
+The motivation behind Difference of Gaussian **DoG** is to serve as a speedy alternative for blob detection while also maintaining scale invariance. Typically, a scale-normalized Laplacian of Gaussian (LoG) is used for this, but with a bit of clever math, **DoG** can acheive a good approximation of **scale-normalized LoG** efficiently as the smoothed image $$L$$ can be used for scale-space feature description by image subtraction.
 
 **Proving DoG $$\approx$$ LoG**
 
@@ -53,10 +45,10 @@ $$
 \nabla^{2}L=\nabla^{2}(G\ast I)=\underbrace{\nabla^{2}G}_\textrm{LoG}\ast I
 $$
 
-LoG can be expanded to:
+**LoG** can be expanded to:
 
 $$
-\frac{\partial^{2}G}{\partial x^{2}}=\frac{G(x,y,\sigma)}{\sigma^{2}} \left(\frac{x^2}{\sigma^2} - 1\right) \\
+\frac{\partial^{2}G}{\partial x^{2}}=\frac{G(x,y,\sigma)}{\sigma^{2}} \left(\frac{x^2}{\sigma^2} - 1\right) \quad
 
 \frac{\partial^{2}G}{\partial y^{2}}=\frac{G(x,y,\sigma)}{\sigma^{2}} \left(\frac{y^2}{\sigma^2} - 1\right)
 $$
@@ -74,14 +66,14 @@ $$
 \end{align}
 $$
 
-Scale normalized LoG is obtained by eliminating the $$\sigma^{-2}$$ term:
+**Scale-normalized LoG** is obtained by eliminating the $$\sigma^{-2}$$ term:
 
 $$
-\sigma^{2} \left[ \nabla^{2}G = \frac{G(x,y,\sigma)}{\sigma^{2}}\left(\frac{x^2 + y^2}{\sigma^2} - 2\right) \right] \\
+\sigma^{2} \left[ \nabla^{2}G = \frac{G(x,y,\sigma)}{\sigma^{2}}\left(\frac{x^2 + y^2}{\sigma^2} - 2\right) \right] \Rightarrow
 \underbrace{\sigma^{2}\nabla^{2}G}_\textrm{Scale Norm LoG} = G(x,y,\sigma)\left(\frac{x^2 + y^2}{\sigma^2} - 2\right)
 $$
 
-Using this, we can take the finite difference approximation using nearby scales $$\sigma$$ and $$k\sigma$$ to discover the relationship between scale-normalized LoG and DoG. 
+Using this, we can take the finite difference approximation using nearby scales $$\sigma$$ and $$k\sigma$$ to discover the relationship between **scale-normalized LoG** and **DoG**. 
 
 $$
 \begin{align}
@@ -91,13 +83,135 @@ $$
 \end{align}
 $$
 
-This shows that when taking the difference between two Gaussians with scales differing by constant factor $$k$$, the $$\sigma^{2}$$ scale normalization required for scale invariant LoG is automatically incorperated. Factor (k - 1) remains constant for every $$\sigma$$ which means that it will not influence extrema locality which is important for the following steps.
+This shows that taking the difference between two Gaussians with scales differing by constant factor $$k$$, the $$\sigma^{2}$$ term required for **scale-normalized LoG** is automatically incorperated. Factor (k - 1) remains constant for every $$\sigma$$ which means that it will not influence extrema locality which is important for the following steps.
 
-![DoG.png](/content/cv/stitching/DoG.png)
-
+[![DoG.png](/content/cv/stitching/DoG.png)](/content/cv/stitching/DoG.png)
 ## **Local Extrema Detection**
 
-Now that we have a good representation of regions with rapid changes in the image from DoG, we can locate the extrema of a DoG image by applying the following. For detecting an extrema, points are sampled in the image and then compared to its eight neighbors and nine neighbors in the previous scale and next scale. It is selected as a keypoint candidate if the value is greater than or less than all of its neighbors.
+<p align="center">
+    <img src="/content/cv/stitching/scale.png" />
+</p>
+
+Now that we have a good representation of regions with rapid changes in the image from DoG, we can locate the extrema and use them as a representation of keypoints in the image. For detecting extrema, points are sampled in the image and then compared to its eight neighbors in the current scale and nine neighbors in the previous scale and next scale. It is selected as a keypoint candidate if the value is greater than or less than all of its neighbors.
+
+[![extrema.png](/content/cv/stitching/extrema.png)](/content/cv/stitching/extrema.png)
+
+## **Keypoint Localization and Refinement**
+
+Naturally, the keypoints extracted from the previous step are crudely localized because of the quantization used in constructing the scale-space. As a result, there can be many unreliable keypoint candidates because their locations are approximations of the extrema. SIFT refines the keypoint candidates by fitting their local neighborhoods with the second order Taylor expansion of the DoG function. Then it interpolates the discrete approximations from the previous step to give a better representation of the extrema.
+
+**Interpolation of nearby data for more accurate extrema**
+
+This is done by using the second order Taylor expansion for the DoG function with a sample keypoint $$\mathbf z_i = [x_i \ y_i \ \sigma_i]^{T}$$ and shifting it by an offset $$\mathbf z = [x \ y \ \sigma]^{T} $$ so that the origin is at the sample's location.
+
+$$
+D(x,y,\sigma) = D(\mathbf{z_i}+\mathbf z)
+\approx D(\mathbf{z_i}) + \bigg(\frac{ \partial D}{\partial \mathbf z}\bigg)^T\bigg|_{\mathbf z=\mathbf z_i}\mathbf z + \frac 1 2 \mathbf z^T\frac{ \partial^2 D}{\partial \mathbf z^2}\bigg|_{\mathbf z=\mathbf z_i} \mathbf z
+$$
+
+To locate an extremum $$\mathbf{\hat z}$$, take the derivative of the Taylor expansion with respect to $$\mathbf{z}$$ and set it to **0**:
+
+Solving derivative for the Taylor expansion using <a href="http://www.gatsby.ucl.ac.uk/teaching/courses/sntn/sntn-2017/resources/Matrix_derivatives_cribsheet.pdf"> matrix/vector manipulation</a>:
+
+$$
+\frac{\partial}{\partial \mathbf{z}} \bigg[D(\mathbf{z_i}) + \bigg(\frac{ \partial D}{\partial \mathbf z}\bigg)^T\mathbf z + \frac 1 2 \mathbf z^T\frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf z \bigg] \\
+\begin{align}
+\\
+&= \frac{\partial}{\partial \mathbf{z}} D(\mathbf{z_i}) + \frac{\partial}{\partial \mathbf{z}}\bigg[\bigg(\frac{ \partial D}{\partial \mathbf z}\bigg)^T\mathbf z \bigg] + \frac 1 2 \frac{\partial}{\partial \mathbf{z}} \bigg[ \mathbf z^T\frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf z \bigg]\\
+
+&= 0 + \frac{\partial}{\partial \mathbf{z}}\bigg[\mathbf z^T \frac{ \partial D}{\partial \mathbf z}\bigg] + \frac 1 2 \frac{\partial}{\partial \mathbf{z}} \bigg[ \mathbf z^T\frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf z \bigg]\\
+
+&= \frac{ \partial D}{\partial \mathbf z} + \frac 1 2 \bigg[ 2 \frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf z \bigg]\\
+&= \frac{ \partial D}{\partial \mathbf z} + \frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf z \\
+\end{align}
+$$
 
 
-![extremas.png](/content/cv/stitching/extremas.png)
+Set it equal to **0** and solve for extremum $$\mathbf{\hat z}$$:
+
+$$
+\frac{ \partial D}{ \partial \mathbf z} + \frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf{\hat z} = 0 \quad \Rightarrow
+\frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf{\hat z} = -\frac{ \partial D}{ \partial \mathbf z} \quad \Rightarrow
+\mathbf{\hat z} = -\frac{ \partial^2 D}{\partial \mathbf z^2}^{-1}\frac{ \partial D}{ \partial \mathbf z}
+$$
+
+If $$\mathbf{\hat z}$$ is greater than **0.5** or less than **-0.5** for any dimension, then that indicates that the extremum lies outside the neighborhood of the sample so the candidate keypoint is discarded. Otherwise, add the offset $$\mathbf{\hat z}$$ to the candidate keypoint $$\mathbf{z_i}$$ to get the updated extremum $$\mathbf{z_i} + \mathbf{\hat z}$$. This process is done iteratively until the offset is valid. If its not valid by the final iteration, then it is discarded.
+
+**Eliminating low contrast points**
+
+We can substitute $$\mathbf z$$ in the Taylor expansion with $$\mathbf{\hat{z}}$$ to get the interpolated value at the localized extremum:
+
+$$
+\begin{align}
+D(\mathbf{z_i}+\mathbf{\hat z}) &= 
+D(\mathbf{z_i}) + \bigg(\frac{ \partial D}{\partial \mathbf z}\bigg)^T\bigg|_{\mathbf z=\mathbf z_i} \mathbf{\hat z} + \frac 1 2 \mathbf{\hat z}^T\frac{ \partial^2 D}{\partial \mathbf z^2}\bigg|_{\mathbf z=\mathbf z_i} \mathbf{\hat z} \\
+&= D(\mathbf{z_i}) + \frac 1 2 \bigg(\frac{ \partial D}{\partial \mathbf z}\bigg)^T\bigg|_{\mathbf z=\mathbf z_i} \mathbf{\hat z}
+\end{align}
+$$
+
+The value represents the contrast at that point. If \|$$D(\mathbf{z_i}+\mathbf{\hat z})$$\|$$< 0.03 $$, it is consider to be low contrast and discarded.
+
+
+[![contrast_ref.png](/content/cv/stitching/contrast_ref.png)](/content/cv/stitching/contrast_ref.png)
+
+The red region shows some extrema that were discarded due to having low contrast. The green region shows extrema that shifted by the offset from the interpolation. 
+
+**Eliminating edge responses**
+
+As you may have notice in the DoG images, the contours on my face and hat were easily discernible which means that it had a strong response along these edges and curves. Some of the points along the edges are coarsely located and easily influenced to small amounts of noise resulting in undesirable extrema.
+
+<p align="center">
+    <a href="/content/cv/stitching/edges.png">
+        <img src="/content/cv/stitching/edges.png" />
+    </a>
+</p>
+
+Using the 2D Hessian $$\mathbf H$$ of the DoG, information about the local structure around a keypoint can be obtained. The eigenvalues of $$\mathbf H$$ can provide the maximal and minimal principle curvatures at a DoG point. Edges will have a large principal curvature orthogonal to the contour and a small one along the contour.
+
+
+[![curvatures.png](/content/cv/stitching/curvatures.png)](/content/cv/stitching/curvatures.png)
+
+All of the keypoints in the green region should be discarded. In the blue, the points along the ridge should be kept because the orthogonal principal curvature is nearly the same as the one along the contour, indicating that it is not on an edge.
+
+SIFT will discard the keypoints whose eigenvalue ratio is more than threshold $$r$$, as this indicates that the point lies on an edge. $$r$$ is related to the ratio of the Hessian determinant and its trace.
+
+$$
+\mathbf{H} = \begin{bmatrix}
+D_{xx} & D_{xy} \\
+D_{xy} & D_{yy}
+\end{bmatrix}
+\quad \quad
+\frac {\text{Tr}(\mathbf{H})^2} {\text{Det}(\mathbf{H})}
+= \frac {(\lambda_{1} + \lambda_{2})^2}{\lambda_{1}\lambda_{2}} < \frac{(r+1)^2}{r}
+$$
+
+This relationship can also be expressed as:
+
+$$
+\frac {\text{Tr}(\mathbf{H})^2} {\text{Det}(\mathbf{H})} < \frac{(r+1)^2}{r}
+\quad \Rightarrow \quad r\text{Tr}(\mathbf{H})^2 < (r+1)^2\text{Det}(\mathbf{H})
+$$
+
+[![elim_edge.png](/content/cv/stitching/elim_edge.png)](/content/cv/stitching/elim_edge.png)
+
+## **Keypoint Descriptor**
+
+Now that we have robust kepoints from the image, we want to be able to assign them with a local coordinate system that remains invariant from different perspectives. SIFT assigns a keypoint with an orientation to provide rotation invariance. The local dominant gradient angle over a keypoint is used as a reference for the orientation, allowing for orientation normalization.
+
+**Orientation histogram accumulation**
+First, accumulate 
+
+**Smoothing the histogram**
+
+**Reference orientation extraction**
+
+# **What's next?**
+Next, I'll be explaining how to match the feature keypoints gathered from using SIFT in order to stitch images together.
+
+**Additional Notes**
+
+The code I provided is a barebones implementation I had done, so it is likely suboptimal and prone to errors. I found that the original paper was insufficient in terms of providing information on how to construct the algorithm.
+
+I did a little digging and found an <a href="http://www.ipol.im/pub/art/2014/82/article.pdf">article</a> that goes into excruciating detail on how to go about implementing the algorithm. I referenced it a lot when constructing the algorithm but left out many things. If I didn't explain something very well or you would like to understand the algorithm more clearly, I suggest you take a look at it.
+
+# References

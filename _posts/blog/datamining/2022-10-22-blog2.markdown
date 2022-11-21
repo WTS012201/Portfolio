@@ -68,19 +68,6 @@ $$
 
 Apply the kernel to each receptive field and sum the elements to the resulting feature map.
 
-$$
-
-  C_{n\times n} =
-  \left[ {\begin{array}{cccc}
-    c_{11} & \cdots & c_{1n}\\
-    \vdots & \ddots & \vdots\\
-    c_{n1} & \cdots & a_{nn}\\
-  \end{array} } \right]
-\ \text{where n is the size of the feature map and} \
-c_{ij} = \sum_{i}\sum_{j} (S_{ij} \odot B)_{ij}
-% \ \text{and }
-$$
-
 ![conv.gif](/content/datamining/conv_nets/conv.gif)
 
 The size of the feature map $$n_{out}$$ depends on the size of the input $$n_{in}$$, stride $$s$$, padding $$p$$, and kernel $$k$$.  In the example, $$n_{in}$$ = 4 reduced to $$n_{out}$$ = 2, but typically we want $$n_{in}$$ = $$n_{out}$$ as you'll see later.

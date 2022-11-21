@@ -1,0 +1,9 @@
+---
+layout: post
+excerpt_separator: <!--more-->
+permalink: /blog/computer_vision/Homography
+title: "Image Stitching - Part 2: Feature Matching with Homography"
+date: 2022-09-24
+category: 1
+image: /content/cv/stitching/featured.png
+---

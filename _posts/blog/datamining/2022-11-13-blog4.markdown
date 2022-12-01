@@ -15,7 +15,7 @@ In this blog, I will be comparing some of the old methods of image classificatio
 
 # Old School Approach with SVM
 
-**Support Vector Machine** (SVM) is one of the old school methods used for image classification problems. It essentially plots the input feature in a n-dimensional space for two classes and attempts to separate the feature data by finding the hyperplane that best isolates the differences in the data.
+**Support Vector Machine** (SVM) is one of the old school methods used for image classification problems. It essentially plots the input features in a n-dimensional space for two classes and attempts to separate the feature data by finding the hyperplane that best isolates the differences in the data.
 
 ### Kernel Trick 
 
@@ -61,6 +61,10 @@ If you would like to understand more about the learning problem for SVM, I sugge
 
 ## SVM with scikit-learn
 
+<a href="https://github.com/WTS012201/CSE4334/blob/main/assignment4/svm.ipynb">
+Notebook for the following code
+</a>
+
 {% highlight python %}
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -77,7 +81,7 @@ PATH = "/home/will/Documents/datasets/wild_animals"
 
 ### Loading the Image Data
 
-When using SVM, one thing you really need to consider is the size of the feature input. We don't want to have an absurdly large feature vector because it would an insane amount of time to train. Also, the number of samples from the datset has to be kept relatively small because it can influence the time complexity by a power of 3.
+When using SVM, one thing you really need to consider is the size of the feature input. We don't want to have an absurdly large feature vector because it would require a crazy amount of time to train. Also, the number of samples from the datset has to be kept relatively small because it can influence the time complexity by a power of 3.
 
 $$
 \text{Training time complexity: } \quad O(n_{features} \times n_{samples}^3)
@@ -106,7 +110,7 @@ def load_image_files(data_dir, lim_sample=None):
 x, y = load_image_files(PATH + "/" + sizes[0])
 {% endhighlight %} 
 
-I resized the image to be 64x64x3 and flattened the image to obtain the feature vector. I'm using the values from the image as the feature input. I have seen more advance techniques used to genereate feature values such as Histogram of Gradients (HOG), but I will be using the more simple approach.
+I resized the images to be 64x64x3 and flattened them to obtain the feature vector. I'm using the values from the image as the feature input. I have seen more advance techniques used to genereate feature values such as Histogram of Gradients (HOG), but I will be using the more simple approach.
 
 {% highlight python %}
 x_train, x_test, y_train, y_test = train_test_split(
@@ -194,7 +198,7 @@ plt.xlabel("FP Rate")
 
 {% endhighlight %} 
 
-The ROC represents the degrees of separability, in other words, its a measure for how well the model distinguishes the classes. The AUC represents how often the model predicts the class as correctly right or wrong. This metric will give us more insight into how the model is distinguishes the classes. I chose this because with SVM, this would be a better metric because we're comparing pixel values as opposed to features in the image. 
+The ROC represents the degrees of separability, in other words, its a measure for how well the model distinguishes the classes. The AUC represents how often the model predicts the class as correctly right or wrong. This metric will give us more insight into how the model distinguishes the classes. I chose this because with SVM, this would be a better metric because we're comparing pixel values as opposed to features in the image. 
 
 <p align="center">
   <img src="/content/datamining/old_v_new/ROC.png" />
@@ -211,6 +215,10 @@ ResNet is a Type of CNN that uses a residual learning framework to facilitate th
 <p align="center">
   <img src="/content/datamining/old_v_new/resblock.png" />
 </p>
+
+<a href="https://github.com/WTS012201/CSE4334/blob/main/assignment4/resnet.ipynb">
+Notebook for the following code
+</a>
 
 ## Loading Data
 
@@ -263,7 +271,7 @@ def load_data(path, size, norms):
 
 ## ConvBlock
 
-In the paper, they followed every convolution by a batch norm, so I made it its own module.
+In the paper, it follows every convolution by a batch norm so I made it its own module.
 
 {% highlight python %}
 class ConvBlock(nn.Module):
@@ -317,7 +325,7 @@ class ResBlock(nn.Module):
   <img src="/content/datamining/old_v_new/res_arch.png" />
 </p>
 
-Following the table from above, I constructed the architecture for the ResNet152 they claimed performed the best.
+Following the table from above, I constructed the architecture for the ResNet152 the paper claimed performed the best.
 
 {% highlight python %}
 class ResNet152(nn.Module):
@@ -486,7 +494,7 @@ axs[1].imshow(imgs[1])
 </p>
 
 
-Running the model on the dataset with an without normalization.
+Running the model on the dataset with and without normalization.
 
 {% highlight python %}
 import gc
@@ -523,7 +531,7 @@ def run(norm):
     return runs
 {% endhighlight %}
 
-In the paper, they used SGD with weight_decay=0.0001 and momentum=0.9. I used Binary Cross Entropy loss for training as that is the standard criterion for image classification with CNNs.
+In the paper, SGD with weight_decay=0.0001 and momentum=0.9 is used for the optimizer. I used Binary Cross Entropy loss for training as that is the standard criterion for image classification with CNNs.
 
 ## Evaluation 
 
@@ -600,7 +608,7 @@ One thing I did not mention was the amount of time spent for training each. With
 
 An advantage that the SVM had was that it was easier to set up and toy around with whereas I struggled quite a bit when implementing the ResNet model. The downside is that it doesn't classify as well as ResNet.
 
-### **References**
+# **References**
 
 [1] Nguyen, Andrew. Part V Support Vector Machines - Stanford Engineering Everywhere. <a href="https://see.stanford.edu/materials/aimlcs229/cs229-notes3.pdf">https://see.stanford.edu/materials/aimlcs229/cs229-notes3.pdf</a>
 

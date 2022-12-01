@@ -8,7 +8,7 @@ category: 0
 image: /content/datamining/conv_nets/featured.png
 ---
 
-**Convolutional neural networks**  have played a critical role in solving image classification problems and is typically the first type of architecture considered for building image classifiers.<!--more-->
+**Convolutional neural networks**  have played a critical role in solving image classification problems and is typically the first type of machine learning model considered for building image classifiers.<!--more-->
 
 * TOC
 {:toc}
@@ -34,8 +34,6 @@ B =
 $$
 
 Let **A** represent a grayscale image and **B** be a 2x2 kernel used for detecting vertical edges in **A**. If we perform convolution with a stride of 2 and no padding, then our receptive fields would be the four 2x2 corners of **A** shown below.
-
-
 
 $$ 
 S = \left[ 
@@ -110,7 +108,7 @@ I'll be demonstrating my attempt at CNNs with
 For the sake of brevity, I will only explain the code segments that are relavent towards the topic and will not re-explain code that has already been shown. The notebook is available <a href="https://github.com/WTS012201/CSE4334/blob/main/assignment2/eval.ipynb">Here<a> 
 
 
-{% highlight ruby %}
+{% highlight python %}
 import torch
 import torch.nn as nn
 import torchvision.datasets as datasets
@@ -132,7 +130,7 @@ classes = ["Motorcycle", "Airplane", "Schooner"]
 
 ### **Data**
 
-Normalizing the image data reduces the chance of vanishing & exploding gradients for the optimizer during training. To do this, calculate the mean $$\mu$$ and standard deviation $$\sigma$$ of each channel for every image in the dataset, then subtract each value by its respective mean and divide by its standard deviation.
+Normalizing the image data reduces the chance of vanishing and exploding gradients for the optimizer during training. To do this, calculate the mean $$\mu$$ and standard deviation $$\sigma$$ of each channel for every image in the dataset, then subtract each value by its respective mean and divide by its standard deviation.
 
 $$
 Z = \dfrac{x - \mu}{\sigma}
@@ -140,7 +138,7 @@ $$
 
 PyTorch does the Normalization part for us
 
-{% highlight ruby %}
+{% highlight python %}
 # for simplicity, just normalize whole dataset instead of each class label
 def norm_transforms():
     transform = transforms.Compose(
@@ -166,9 +164,9 @@ def norm_transforms():
 norm, unnorm = norm_transforms()
 {% endhighlight %}
 
-Since the number of images for schooner class is dramatically smaller than the other two classes in the dataset, I computed some weights to apply for the loss criterion during training by taking the difference of each portion by 1.
+Since the number of images for `schooner` class is dramatically smaller than the other two classes in the dataset, I computed some weights to apply for the loss criterion during training by taking the difference of each portion by 1.
 
-{% highlight ruby %}
+{% highlight python %}
 import pandas as pd
 
 class_weights = []
@@ -195,7 +193,7 @@ df
 
 ![](/content/datamining/conv_nets/conv_nets_bar.png)
 
-{% highlight ruby %}
+{% highlight python %}
 Class_weights
 0.962      Schooner
 0.518      Airplane
@@ -205,7 +203,7 @@ dtype: object
 
 The next step is to apply the transformations (Resizing each image to the same size and normalizing) and split the dataset. I originally planned on doing **60/20/20** split for a train, validation, and test set. However, I found that a **20/20** split would be too small and since I was testing a variety of different networks in one go, I wouldn't need to do much tuning. Ultimately, I decided on a **60/40** split and commented out the former.
 
-{% highlight ruby %}
+{% highlight python %}
 def load_data():
     transform = transforms.Compose(
         [
@@ -241,7 +239,7 @@ train_data, val_data = load_data()
 
 ### **My attempt at CNNs**
 
-{% highlight ruby %}
+{% highlight python %}
 class CNN(nn.Module):
     def __init__(self, num_layers, expansion):
         super().__init__()
@@ -285,13 +283,13 @@ The way this network is structured can be explained by `gen_layers`. It takes in
 The `forward` pass throws the input through the sequence of conv layers in `self.net`, then passes the output from the `self.net` to the sequence of fully connected layers from `classifier` to get the prediction.
 
 Notice 
-{% highlight ruby %}fcl = ((IMG_SIZE // (2 ** num_layers)) ** 2) * in_channels{% endhighlight %}
+{% highlight python %}fcl = ((IMG_SIZE // (2 ** num_layers)) ** 2) * in_channels{% endhighlight %}
 This expression represents the number of neurons in each feature map multiplied by the number of feature maps at the end of `gen_layers`. Recall that maintaining dimensionality of the feature maps  $$n_{in}$$ = $$n_{out}$$ makes computing this value convenient.
 
 
 ### **Metrics for training**
 
-{% highlight ruby %}
+{% highlight python %}
 def eval(model, data):
     with torch.no_grad():
         correct = 0
@@ -312,7 +310,7 @@ This function scores the percent accuracy and number of correct classifications.
 
 ### **Training loop**
 
-{% highlight ruby %}
+{% highlight python %}
 def train(model, train_data, val_data, batch, epochs, lr, class_weights):
     loader = DataLoader(
         train_data,
@@ -353,17 +351,17 @@ def train(model, train_data, val_data, batch, epochs, lr, class_weights):
     return epoch_data
 {% endhighlight %}
 
-This is the standard training loop for a PyTorch model. Only things Noteworthy here are the criterion and optimizer.
+This is the standard training loop for a PyTorch model. Only things noteworthy here are the criterion and optimizer.
 
 Notice
-{% highlight ruby %}
+{% highlight python %}
 criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
 {% endhighlight %}
 
 I used the class weights I calculated earlier with the `Cross Entropy Loss` function. For the optimizer, I used `Stochastic Gradient Descent` with a learning rate specific to each model.
 
 ### **Test out CNNs** 
-{% highlight ruby %}
+{% highlight python %}
 expansions = []
 lrs = [1e-4, 2e-3, 35e-4, 0.01]
 num_layers = 4
@@ -399,7 +397,7 @@ In the above code segment, I'm evaluating different CNN architectures based on n
 
 ### **Plotting losses and accuracies**
 
-{% highlight ruby %}
+{% highlight python %}
 def str_conv_seq(expr, n_lay):
     prior = CHANNELS_D
     conv_seq = str(prior)
@@ -479,7 +477,7 @@ plot_accuracies(runs)
 [ ![](/content/datamining/conv_nets/conv_nets_plot2.png) ](/content/datamining/conv_nets/conv_nets_plot2.png)
 
 
-{% highlight ruby %}
+{% highlight python %}
 def show_final_acc(runs):
     convs = []
     for (n_lay, expr, _, epoch_data) in runs:
@@ -495,7 +493,7 @@ show_final_acc(runs)
 
 **Output**
 
-{% highlight ruby %}
+{% highlight python %}
 accuracies on validation set
 3->16 FM total: 16                 95.789%
 3->6 FM total: 6                   90.376%
@@ -535,11 +533,11 @@ The original VGG didn't include batchnorm operations in the model, so that is so
 I didn't include softmax on the output because I'm using cross entropy loss (CEL) as my loss function. Generally, the combination of both would introduce vanishing gradient problem because PyTorch incorporates softmax into CEL by default. See <a href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html">torch.nn.CrossEntropyLoss<a> 
 
 
-I had orignally included it to see what my results would look like. the loss struggled to decrease and the model wouldn't improve.
+I had orignally included it to see what my results would look like. The loss struggled to decrease and the model wouldn't improve.
 
 ### **Model**
 
-{% highlight ruby %}
+{% highlight python %}
 class VGG(nn.Module):
     def __init__(self, net_config=None):
         super().__init__()
@@ -596,7 +594,7 @@ The model is very basic and structured similarly to how I designed my vanilla CN
 
 ### **Evaluation**
 
-{% highlight ruby %}
+{% highlight python %}
 runs_vgg = []
 batch_size = 16
 num_epochs = 30
@@ -624,7 +622,7 @@ for (vgg_arch, layers) in VGG().configs.items():
     del model
 {% endhighlight %}
 
-{% highlight ruby %}
+{% highlight python %}
 def subtitle(fig, grid, title):
     row = fig.add_subplot(grid)
     row.set_title(f'{title}', fontweight='semibold')
@@ -664,7 +662,7 @@ plot_runs(runs_vgg)
 
 Looking at the accuracy for the validation set, there are massive dips in some of the models. If you look closely, you can correspond these dips to an increase on the loss curve at the same epoch, which would explain the drop in accuracy.
 
-{% highlight ruby %}
+{% highlight python %}
 def show_final_acc(runs):
     convs = []
     for (arch, n_params, epoch_data) in runs:
@@ -678,7 +676,7 @@ show_final_acc(runs_vgg)
 
 **Output**
 
-{% highlight ruby %}
+{% highlight python %}
 accuracies on validation set
 VGG-11A    99.398%
 VGG-13B    99.549%
@@ -698,10 +696,9 @@ dtype: object
 
 The changes I made from the original VGG net architecture can pratically be applied here. Original GoogLeNet didn't use batchnorms, it used softmax, and trained on 224x224 images.
 
-
 Same sequences of operations following a convolution as the other networks, but this time I made it into its own class to be applied repeatedly throughout the network.
 
-{% highlight ruby %}
+{% highlight python %}
 class Conv(nn.Module):
     def __init__(self, in_channels, out_channels, **kwargs):
         super().__init__()
@@ -721,7 +718,7 @@ class Conv(nn.Module):
 
 This block is responsible for deciding which kernel sizes contribute the most on a given input in the network. Since using 3x3 and 5x5 filters can be computationally expensive, they apply 1x1 filters before them to reduce the number of input features for those conv layers.
 
-{% highlight ruby %}
+{% highlight python %}
 
 
 class Inception(nn.Module):
@@ -756,7 +753,7 @@ class Inception(nn.Module):
 
 I constructed the layers for the network using the same values in the same order from the table above.
 
-{% highlight ruby %}
+{% highlight python %}
 class GoogLeNet(nn.Module):
     def __init__(self):
         super().__init__()
@@ -804,7 +801,7 @@ class GoogLeNet(nn.Module):
 
 ### **Evaluation**
 
-{% highlight ruby %}
+{% highlight python %}
 runs_google = []
 batch_size = 64
 num_epochs = 100
@@ -826,7 +823,7 @@ runs_google.append(("GoogLeNet", n_params, epoch_data))
 del model
 {% endhighlight %}
 
-{% highlight ruby %}
+{% highlight python %}
 train_info = [*zip(*runs_google[0][2])]
 acc = np.array(train_info[2]) / 100
 plt.figure(figsize=(12,6))
@@ -840,7 +837,7 @@ print(f"GoogLeNet accuracy: {train_info[0][-1]:.3f}")
 
 
 **Output**
-{% highlight ruby %}
+{% highlight python %}
 GoogLeNet accuracy: 99.000
 {% endhighlight %}
 

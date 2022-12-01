@@ -33,7 +33,7 @@ and $$ P(C \displaystyle \cap S) = P(S \displaystyle \cap C) $$, then $$\dots$$
 
 $$ P(C \displaystyle \cap S) = P(S \displaystyle \cap C) = P(S | C)P(C)$$
 
-Now we can substitute the unknown term with terms that can be determine and arrive at **Bayes' Theorem**:
+Now we can substitute the unknown term with terms that can be determined and arrive at **Bayes' Theorem**:
 
 $$
 P(C | S) = \frac{P(S|C)P(C)}{P(S)}
@@ -83,7 +83,7 @@ The dataset provides texts for job descriptions as `New_Sentence` and their type
 
 I split data into train, validation, and test sets below. 
 
-{% highlight ruby %}
+{% highlight python %}
 import pandas as pd
 import re
 import math
@@ -106,7 +106,7 @@ I'll be showing you the process of building the Naive Bayes Classifier class I c
 
 We can start with computing the prior probabilities of each class $$P(c)$$ which is fairly simple. Just divide the number of occurrences for a class by the number of data samples for every class. Here's how I did that:
 
-{% highlight ruby %}
+{% highlight python %}
 def separate_by_class(self, train_data):
     class_tables = {}
 
@@ -117,7 +117,7 @@ def separate_by_class(self, train_data):
     return class_tables
 {% endhighlight %}
 
-{% highlight ruby %}
+{% highlight python %}
 def compute_priors(self, train_data):
     priors = {}
 
@@ -131,7 +131,7 @@ def compute_priors(self, train_data):
 ### **Computing Occurrences**
 Now we want to be able to have the probability for a word occuring in a specific class $$P(w|c)$$. To do this, calculate the total number of times a word appears in a class and divide by the class size. Do this for every word in a class and for every class.
 
-{% highlight ruby %}
+{% highlight python %}
 def compute_occurrences(self):
     vocab_class = {}
 
@@ -187,7 +187,7 @@ $$
 \underbrace{P(C | S)}_\textrm{Posterior} \propto \underbrace{P(C)}_\textrm{Prior}\underbrace{\prod_{w\in S}P(w|C)}_\textrm{Likelihood}
 $$
 
-{% highlight ruby %}
+{% highlight python %}
 def __call__(self, sentence):
     max_posterior = (None, 0)
 
@@ -214,7 +214,7 @@ def __call__(self, sentence):
 
 ## **Putting Everything Together**
 
-{% highlight ruby %}
+{% highlight python %}
 class NBC():
     def __init__(self, train_data, smoothing=True, alpha=1) -> None:
         assert alpha > 0, "Alpha must be greater than 0"
@@ -311,9 +311,9 @@ class NBC():
 
 ## **Model Evaluation**
 
-To see how the model performs, total the number of correct predictions and compared it with the size of the validation set to get the accuracy.
+To see how the model performs, total the number of correct predictions and compare it with the size of the validation set to get the accuracy.
 
-{% highlight ruby %}
+{% highlight python %}
 def eval(model, data):
     score = 0
 
@@ -326,14 +326,14 @@ def eval(model, data):
 
 ### **Smoothing**
 
-{% highlight ruby %}
+{% highlight python %}
 model = NBC(train_data, smoothing=False)
 print(f"Accuracy: {eval(model, val_data)} ")
 {% endhighlight %}
 
 
 **output**
-{% highlight ruby %}
+{% highlight python %}
 Accuracy: 0.37965281975991017
 {% endhighlight %}
 
@@ -349,14 +349,14 @@ $$P(w|c) = \frac{0 + \alpha}{N + \alpha K} \quad \alpha > 0$$
 
 where **N** is the size of a class and **K** is the number of classes
 
-{% highlight ruby %}
+{% highlight python %}
 model = NBC(train_data, smoothing=True)
 print(f"Accuracy: {eval(model, val_data)} ")
 {% endhighlight %}
 
 **output**
 
-{% highlight ruby %}
+{% highlight python %}
 Accuracy: 0.6546333880300544 
 {% endhighlight %}
 
@@ -366,7 +366,7 @@ Using **Laplace Smoothing**, I was able to significantly improve the model accur
 
 Now that we have the overall performance of the model, let's see how the model is performing on each class.
 
-{% highlight ruby %}
+{% highlight python %}
 def class_perf(model, data):
     class_performance = {}
     for class_type in model.priors.keys():
@@ -380,7 +380,7 @@ def class_perf(model, data):
 
 **output**
 
-{% highlight ruby %}
+{% highlight python %}
 Accuracy by class:
 Responsibility    0.882784
 Requirement       0.320044
@@ -393,7 +393,7 @@ dtype: float64
 
 The model is not performing well for sentences of type `Requirement` and `Skill`. Looking at which words contribute the most to the prediction for the classes may give us some insight into why this is the case.
 
-{% highlight ruby %}
+{% highlight python %}
 top_words = {}
 for class_type, class_occ in model.occurrences.items():
     top_words[class_type] = [*class_occ.keys()][:10]
@@ -411,7 +411,7 @@ The column for the top ten words in `Requirements` is very similar to the column
 
 I tried messing around with one of the column values for these words to see if it improves the performance. I found that if I set some of the words in `Requirements` to 1, it improved the model by 3%.
 
-{% highlight ruby %}
+{% highlight python %}
 import copy
 
 model_copy = copy.deepcopy(model)
@@ -422,13 +422,13 @@ for word in ignore:
     req[word] = 1
 {% endhighlight %}
 
-{% highlight ruby %}
+{% highlight python %}
 print(f"Accuracy: {eval(model_copy, val_data)} ")
 class_perf(model_copy, val_data)
 {% endhighlight %}
 
 **output**
-{% highlight ruby %}
+{% highlight python %}
 Accuracy: 0.6897832282580534 
 Accuracy by class:
 Responsibility    0.856810
@@ -444,13 +444,13 @@ I believe this works because it's essentially ignoring the words when computing 
 
 Now let's see if the changes we made influenced the performance on the test set.
 
-{% highlight ruby %}
+{% highlight python %}
 print(f"Accuracy: {eval(model, test_data)} ")
 print(f"Accuracy: {eval(model_copy, test_data)} ")
 {% endhighlight %}
 
 **output**
-{% highlight ruby %}
+{% highlight python %}
 Original Accuracy: 0.650967996839194 
 Modified Accuracy: 0.6809956538917424 
 {% endhighlight %}

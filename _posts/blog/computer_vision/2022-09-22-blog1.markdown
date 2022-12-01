@@ -100,7 +100,7 @@ Now that we have a good representation of regions with rapid changes in the imag
 
 Naturally, the keypoints extracted from the previous step are crudely localized because of the quantization used in constructing the scale-space. As a result, there can be many unreliable keypoint candidates because their locations are approximations of the extrema. SIFT refines the keypoint candidates by fitting their local neighborhoods with the second order Taylor expansion of the DoG function. Then it interpolates the discrete approximations from the previous step to give a better representation of the extrema.
 
-**Interpolation of nearby data for more accurate extrema**
+### **Interpolation of Nearby Data**
 
 This is done by using the second order Taylor expansion for the DoG function with a sample keypoint $$\mathbf z_i = [x_i \ y_i \ \sigma_i]^{T}$$ and shifting it by an offset $$\mathbf z = [x \ y \ \sigma]^{T} $$ so that the origin is at the sample's location.
 
@@ -137,7 +137,7 @@ $$
 
 If $$\mathbf{\hat z}$$ is greater than **0.5** or less than **-0.5** for any dimension, then that indicates that the extremum lies outside the neighborhood of the sample so the candidate keypoint is discarded. Otherwise, add the offset $$\mathbf{\hat z}$$ to the candidate keypoint $$\mathbf{z_i}$$ to get the updated extremum $$\mathbf{z_i} + \mathbf{\hat z}$$. This process is done iteratively until the offset is valid. If its not valid by the final iteration, then it is discarded.
 
-**Eliminating low contrast points**
+### **Eliminating low contrast points**
 
 We can substitute $$\mathbf z$$ in the Taylor expansion with $$\mathbf{\hat{z}}$$ to get the interpolated value at the localized extremum:
 
@@ -156,7 +156,7 @@ The value represents the contrast at that point. If \|$$D(\mathbf{z_i}+\mathbf{\
 
 The red region shows some extrema that were discarded due to having low contrast. The green region shows extrema that shifted by the offset from the interpolation. 
 
-**Eliminating edge responses**
+### **Eliminating edge responses**
 
 As you may have notice in the DoG images, the contours on my face and hat were easily discernible which means that it had a strong response along these edges and curves. Some of the points along the edges are coarsely located and easily influenced to small amounts of noise resulting in undesirable extrema.
 
@@ -203,7 +203,13 @@ First, accumulate
 
 **Smoothing the histogram**
 
-**Reference orientation extraction**
+### **Reference Orientation Extraction**
+
+### **Keypoint Normalized Descriptor**
+
+**Array of orientation histograms**
+
+**Patch Normalization**
 
 # **What's next?**
 Next, I'll be explaining how to match the feature keypoints gathered from using SIFT in order to stitch images together.
@@ -212,6 +218,6 @@ Next, I'll be explaining how to match the feature keypoints gathered from using 
 
 The code I provided is a barebones implementation I had done, so it is likely suboptimal and prone to errors. I found that the original paper was insufficient in terms of providing information on how to construct the algorithm.
 
-I did a little digging and found an <a href="http://www.ipol.im/pub/art/2014/82/article.pdf">article</a> that goes into excruciating detail on how to go about implementing the algorithm. I referenced it a lot when constructing the algorithm but left out many things. If I didn't explain something very well or you would like to understand the algorithm more clearly, I suggest you take a look at it.
+I did a little digging and found an <a href="http://www.ipol.im/pub/art/2014/82/article.pdf">article</a> that goes into extreme detail on how to go about implementing the algorithm. I referenced it a lot when constructing the algorithm but left out some details. If I didn't explain something very well or you would like to understand the algorithm more clearly, I suggest you take a look at it.
 
 # References

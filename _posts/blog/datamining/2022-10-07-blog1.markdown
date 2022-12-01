@@ -19,7 +19,7 @@ Kaggle's **Titanic - Machine Learning from Disaster** is a classic introductory 
 
 Alexis provides a brief introduction for making a submission to kaggle with some sample code for this challenge. She uses a random forest classifier for the model in her example.
 
-{% highlight ruby %}
+{% highlight python %}
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -33,13 +33,13 @@ for dirname, _, filenames in os.walk('PATH'):
         print(os.path.join(dirname, filename))
 {% endhighlight %}
 
-{% highlight ruby %}
+{% highlight python %}
 ### Load Datasets
 train_data = pd.read_csv(PATH + "train.csv")
 test_data = pd.read_csv(PATH + "test.csv")
 {% endhighlight %}
 
-{% highlight ruby %}
+{% highlight python %}
 y = train_data["Survived"]
 
 features = ["Pclass", "Sex", "SibSp", "Parch"]
@@ -62,7 +62,7 @@ The submission of this model resulted in a score of 0.77511
 
 We can start by looking for entries in the dataset to dropout or modify to improve the performance of the model. The passenger ID contains a unique and non-null value which means that there will be no duplicates to drop. There are missing values in other columns that we can explore.
 
-{% highlight ruby %}
+{% highlight python %}
 data_list = [train_data.drop("Survived", axis=1), test_data]
 data_list = [train_data, test_data]
 for i, dl in enumerate(data_list):
@@ -82,7 +82,7 @@ plt.show()
 {% endhighlight %}
 
 **Output**
-{% highlight ruby %}
+{% highlight python %}
 Total number of rows: 1309
 
 Age          263
@@ -102,7 +102,7 @@ Since the number of missing values for `Fare` and `Embarked` column is negligibl
 
 We can apply the same principle for the `Cabin` column. The format of the cabin data will need to be changed. The cabin data is given as `<Cabin Type><Room Number>`. The room number can be discarded but since the cabin type likely has some influence on rather a passenger survives, it should be included. To check this, we'll look at the relationship between the cabin type and passenger survival.
 
-{% highlight ruby %}
+{% highlight python %}
 pd.options.mode.chained_assignment = None
 ### Note: You would drop the Fare and Embarked null values
     # dl = dl[dl["Fare"].notna() & dl["Embarked"].notna()]
@@ -126,7 +126,7 @@ corr
 {% endhighlight %}
 
 **Output**
-{% highlight ruby %}
+{% highlight python %}
                Age     Cabin
 Survived -0.077221  0.287944
 Pclass   -0.408106 -0.563667
@@ -139,7 +139,7 @@ Cabin     0.205097  1.000000
 
 `Pclass` appears to have a high influence on `Age` and `Cabin` column. This information can be applied to extract finer approximations to replace the missing entries as opposed to using a "one fits all" approximation.
 
-{% highlight ruby %}
+{% highlight python %}
 train_data_copy = train_data.copy()
 train_data_copy["Cabin"] = train_data_copy["Cabin"].astype('category').cat.codes
 group_survive = train_data_copy.groupby("Cabin")["Survived"].sum()
@@ -159,7 +159,7 @@ plt.show()
 
 ![](/content/datamining/titanic/titanic_chart.png)
 
-{% highlight ruby %}
+{% highlight python %}
 age_group = all_data.groupby(["Pclass"])["Age"].mean().astype(int)
 cabin_group = all_data.groupby(["Cabin"])["Pclass"].agg(pd.Series.mode)
 
@@ -171,7 +171,7 @@ cabin_group
 {% endhighlight %}
 
 **Output**
-{% highlight ruby %}
+{% highlight python %}
 Cabin
 -1    3
  0    1
@@ -187,7 +187,7 @@ Name: Pclass, dtype: int64
 
 Looking at the % survived chart and how the `Cabin` relates to `Pclass`, we can reasonably assume that cabin 2, 4, 5, are roughly the same. We'll bin these cabins and the remaining cabins will go in a separate bin. A `PClass` of 1 will belong to the first bin and anything else belongs to the second bin.
 
-{% highlight ruby %}
+{% highlight python %}
 all_data['Cabin'] = all_data['Cabin'].replace([2,4,5], 0)
 all_data['Cabin'] = all_data['Cabin'].replace([0,1,3,6,7], 1)
 for i in all_data[all_data["Cabin"] == -1].index:
@@ -203,7 +203,7 @@ ser
 {% endhighlight %}
 
 **Output**
-{% highlight ruby %}
+{% highlight python %}
 PassengerId    0
 Pclass         0
 Name           0
@@ -220,7 +220,7 @@ Name: by amount, dtype: int64
 
 Now that there are no more missing values, we can add the `Age` and `Cabin` columns to the features for the original model.
 
-{% highlight ruby %}
+{% highlight python %}
 def train(features):
     train_data = all_data[all_data["Survived"].notna()]
     test_data = all_data[all_data["Survived"].isna()]

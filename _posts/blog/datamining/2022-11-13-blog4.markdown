@@ -5,7 +5,7 @@ permalink: /blog/datamining/old_v_new
 title: Old School vs. New School Image Classifiers
 date: 2022-11-13
 category: 0
-image: /content/datamining/nbc/featured.png
+# image: /content/datamining/nbc/featured.png
 ---
 
 In this blog, I will be comparing some of the old methods of image classification and comparing them to a more modern model. 
@@ -21,8 +21,7 @@ In this blog, I will be comparing some of the old methods of image classificatio
 
 Not all data classes are linearly separable, which is why we typically transform the data into higher dimensional space in such a way so that it becomes linearly separable. We can use a **Non-linear Mapping** using a kernel to transform the data.
 
-
-Ex:
+**Ex:**
 
 Linear Decision Boundary: 
 
@@ -36,18 +35,29 @@ $$
 \rm I\!R^2 \rightarrow \rm I\!R^3
 $$
 
+**Scikit-learn kernel functions**
+
+**linear:** $$\langle x, x'\rangle$$
+
+**polynomial:** $$\left(\gamma\langle x, x'\rangle + r\right)^d$$ where **d** specifies the order of the polynomial and **r** is the coefficient.
+
+**rbf:** $$\exp\left(-\gamma\| x - x'\|^2\right)$$
+
+**sigmoid:** $$\tanh\left(\gamma\langle x, x'\rangle + r\right)$$
+
 <p align="center">
   <img src="/content/datamining/old_v_new/kernels.png" />
 </p>
 
 Figure from <a href="https://scikit-learn.org/stable/modules/svm.html">scikit-learn</a>
 
+
 ### Learning
 
 The best hyperplane (decision boundary) is the one that represents the largest margin between the two classes. Sample data points closest to the hyperplane are called the support vectors and are the data points that are chosen for determining the hyperplane. SVM attempts to find the hyperplane with the maximum distance between the support vectors (maximizing the margin). 
 
  
-If you would like to understand more about the learning problem for SVM, I suggest looking at <a href="https://see.stanford.edu/materials/aimlcs229/cs229-notes3.pdfFigure">Andrew Nguyen’s notes on SVM</a>.
+If you would like to understand more about the learning problem for SVM, I suggest looking at [1] <a href="https://see.stanford.edu/materials/aimlcs229/cs229-notes3.pdf">Andrew Nguyen’s notes on SVM</a>.
 
 ## SVM with scikit-learn
 
@@ -192,10 +202,11 @@ The ROC represents the degrees of separability, in other words, its a measure fo
 
 Note that an AUC value < 0.5 would mean that the model is not distinguishing or performing worse than chance. I expected to see an AUC around 0.7-0.8 because of how I defined the feature vector for the model. Also, six classes makes it more difficult to build a solid classifier with SVM just because of the nature of how SVM handles multi-class classification. 
 
-
 # Modern Approach with ResNet
 
-ResNet is a Type of CNN that uses a residual learning framework to facilitate the training on substantially deeper NN. It hypothesizes that it is easier to optimize a residual mapping than the unreferenced mapping of the stacked layers.
+[2] <a href="https://arxiv.org/abs/1512.03385">Deep Residual Learning for Image Recognition</a>
+
+ResNet is a Type of CNN that uses a residual learning framework to facilitate the training on substantially deeper networks. It hypothesizes that it is easier to optimize a residual mapping as opposed to the unreferenced mapping of the stacked layers.
 
 <p align="center">
   <img src="/content/datamining/old_v_new/resblock.png" />
@@ -512,7 +523,9 @@ def run(norm):
     return runs
 {% endhighlight %}
 
-In the paper, they used SGD with weight_decay=0.0001 and momentum=0.9. I used Binary Cross Entropy loss in the for training as that is the standard criterion for image classificaiton for CNNs.
+In the paper, they used SGD with weight_decay=0.0001 and momentum=0.9. I used Binary Cross Entropy loss for training as that is the standard criterion for image classification with CNNs.
+
+## Evaluation 
 
 {% highlight python %}
 epoch_data = []
@@ -520,5 +533,76 @@ epoch_data += run(False)
 epoch_data += run(True)
 {% endhighlight %}
 
-### Model Comparisons
+{% highlight python %}
+def plot_data(norm):
+    train_info = [*zip(*epoch_data[int(norm)])]
+    train_acc = np.array(train_info[2]) / 100
+    test_acc = np.array(train_info[-1]) / 100
 
+    fig, axs = plt.subplots(1, 2, figsize=(24, 8))
+    axs[0].set_title("ResNet152 Loss", fontsize=20)
+    axs[1].set_title("ResNet152 Accuracy", fontsize=20)
+
+    axs[0].plot(train_info[0], train_info[1], color="red")
+    axs[1].plot(train_info[0], train_acc, color="orange")
+    axs[1].plot(train_info[0], test_acc, color="blue")
+
+    axs[0].set_xlabel("Epoch", fontsize=16)
+    axs[0].set_ylabel("Loss", fontsize=16)
+    axs[1].set_xlabel("Epoch", fontsize=16)
+    axs[1].set_ylabel("Accuracy", fontsize=16)
+
+    print(f"ResNet train accuracy: {train_acc[-1]:.3f}")
+    print(f"ResNet test accuracy: {test_acc[-1]:.3f}")
+
+plot_data(norm=False)
+{% endhighlight %}
+
+
+
+**No Normalization**
+
+**Output**
+
+{% highlight python %}
+ResNet train accuracy: 0.992
+ResNet test accuracy: 0.706
+{% endhighlight %}
+
+<p align="center">
+  <img src="/content/datamining/old_v_new/nonorm_plot.png" />
+</p>
+
+{% highlight python %}
+plot_data(norm=True)
+{% endhighlight %}
+
+**With Normalization**
+
+**Output**
+
+{% highlight python %}
+ResNet train accuracy: 0.932
+ResNet test accuracy: 0.728
+{% endhighlight %}
+
+<p align="center">
+  <img src="/content/datamining/old_v_new/norm_plot.png" />
+</p>
+
+Looking at the test accuracy curves, you may notice that the dips on the data without normalization are much greater than the dips with normalization. This shows that the normalization technique does provide some stability, and it also looks like the final accuracy was slightly better by roughly 2%. Contrasting the train and test accuracies, it appears that normalization generalizes better.
+
+# Closing Thoughts
+
+There are a few things that can be compared when looking at the different types of models used for the image classification.
+
+One thing I did not mention was the amount of time spent for training each. With the SVM, it took my machine roughly 40 minutes to train the SVM with the different hyperparameters, which made it easier to adjust and play around with. With ResNet, It took me nearly two hours to train both models, so I couldn't really change much with the model as it would have taken far too long. Also, I'm sure I could have improved both of the models by a relatively considerable amount if I had used more features for the SVM or iterations for the CNN.
+
+An advantage that the SVM had was that it was easier to set up and toy around with whereas I struggled quite a bit when implementing the ResNet model. The downside is that it doesn't classify as well as ResNet.
+
+### **References**
+
+[1] Nguyen, Andrew. Part V Support Vector Machines - Stanford Engineering Everywhere. <a href="https://see.stanford.edu/materials/aimlcs229/cs229-notes3.pdf">https://see.stanford.edu/materials/aimlcs229/cs229-notes3.pdf</a>
+
+
+[2] He, Kaiming, et al. “Deep Residual Learning for Image Recognition.” ArXiv.org, 10 Dec. 2015, <a href="https://arxiv.org/abs/1512.03385">https://arxiv.org/abs/1512.03385</a>

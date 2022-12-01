@@ -8,7 +8,7 @@ category: 0
 # image: /content/datamining/nbc/featured.png
 ---
 
-In this blog, I will be comparing some of the old methods of image classification and comparing them to a more modern model. 
+In this blog, I will be comparing some of the old methods of image classification and comparing them to a more modern model. I'll be using the <a href="https://www.kaggle.com/datasets/whenamancodes/wild-animals-images">wild-animals-images</a> dataset throughout the blog.
 
 * TOC
 {:toc}

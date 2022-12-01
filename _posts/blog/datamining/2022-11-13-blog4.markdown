@@ -5,7 +5,7 @@ permalink: /blog/datamining/old_v_new
 title: Old School vs. New School Image Classifiers
 date: 2022-11-13
 category: 0
-# image: /content/datamining/nbc/featured.png
+image: /content/datamining/old_v_new/featured.png
 ---
 
 In this blog, I will be comparing a SVM image classifier with a more modern CNN model. I'll be using the <a href="https://www.kaggle.com/datasets/whenamancodes/wild-animals-images">wild-animals-images</a> dataset throughout the blog.

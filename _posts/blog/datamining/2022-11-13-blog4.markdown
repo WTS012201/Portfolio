@@ -608,7 +608,10 @@ One thing I did not mention was the amount of time spent for training each. With
 
 An advantage that the SVM had was that it was easier to set up and toy around with whereas I struggled quite a bit when implementing the ResNet model. The downside is that it doesn't classify as well as ResNet.
 
+The video demo of the models is available <a href="https://www.youtube.com/watch?v=jsOPWQJau0Q">here</a>
+
 # **References**
+
 
 [1] Nguyen, Andrew. Part V Support Vector Machines - Stanford Engineering Everywhere. <a href="https://see.stanford.edu/materials/aimlcs229/cs229-notes3.pdf">https://see.stanford.edu/materials/aimlcs229/cs229-notes3.pdf</a>
 

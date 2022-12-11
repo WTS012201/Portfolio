@@ -23,10 +23,10 @@ $$
 What if the probability of $$ P(C \displaystyle \cap S) $$ can't be computed as is? We know that $$\dots$$
 
 $$
-\begin{align}
+\begin{align*}
 P(S | C) = \frac{P(S \displaystyle \cap C)}{P(C)} \\
 P(S | C)P(C) = P(S \displaystyle \cap C)
-\end{align}
+\end{align*}
 $$
 
 and $$ P(C \displaystyle \cap S) = P(S \displaystyle \cap C) $$, then $$\dots$$
@@ -182,9 +182,12 @@ Second loop is doing word occurence calculations. Notice that I'm not readding w
 
 Now that we have the probabilities of a word appearing in a particular class, we can calulate the product for each word in the sentence we want to predict to get the **likelihood**. Then multiply the **likelihood** by the **prior** of the class to get the **posterior** probability. Do this for each class and take the class with the highest **posterior** probability as our prediction.
 
-Recall
+
 $$
+\begin{align*}
+\text{Recall} \quad \quad
 \underbrace{P(C | S)}_\textrm{Posterior} \propto \underbrace{P(C)}_\textrm{Prior}\underbrace{\prod_{w\in S}P(w|C)}_\textrm{Likelihood}
+\end{align*}
 $$
 
 {% highlight python %}

@@ -22,14 +22,47 @@ When looking at an object in the real world, it is much easier to give more desc
 
 SIFT convolves an image with a 2D Gaussian to produce a scale-space defined as: 
 
+
 $$
-L(x,y,\sigma)=G(x,y,\sigma)\ast I(x,y) \quad \quad
+\begin{align}
+L(x,y,\sigma)=G(x,y,\sigma)\ast I(x,y) \label{eq:test1}
+\end{align}
+$$
+
+$$
+\begin{align}
 G(x,y,\sigma)=\frac{1}{2\pi\sigma^{2}} \exp \left(-\frac{x^{2} + y^{2}}{2\sigma^2} \right)
+\end{align}
 $$
 
 where $$L$$ is the convolution of image $$I$$ and 2D Gaussian $$G$$ with standard deviation $$\sigma$$ as the scale parameter. Since $$I$$ is discrete, Gaussian $$G$$ is represented with a kernel to perform the operation in practice.
 
-SIFT applies this multiple times to the same image with progessively higher scale values to create an octave. The scale parameter will increase by $$\sigma_{i}=k\sigma_{i-1}$$. Then it resizes the image by half and repeats the same process for the next octave.  
+SIFT applies this multiple times to the same image with progessively higher scale values to create an octave. The scale parameter will increase by $$\sigma_{i}=k\sigma_{i-1}$$. Then it resizes the image by half and repeats the same process for the next octave.
+
+{% highlight python %}
+def gen_octave(img, n, sigma = 1, k = math.sqrt(2)):
+    octave = []
+
+    for i in range(n):
+        kernel = cv.getGaussianKernel(5, sigma) # Equation (2)
+        img = cv.filter2D(img, -1, kernel)      # Equation (1)
+        octave.append(img)
+        sigma *= k
+    
+    return octave
+{% endhighlight %}
+  
+{% highlight python %}
+def gen_octaves(img, n_octaves, oct_size):
+    octaves = []
+
+    for i in range(n_octaves):
+        octave = gen_octave(img, oct_size)
+        img = cv.resize(img, (img.shape[0] // 2, img.shape[0] // 2))
+        octaves.append(octave)
+    
+    return octaves 
+{% endhighlight %}
 
 [![octaves.png](/content/cv/stitching/octaves.png)](/content/cv/stitching/octaves.png)
 
@@ -61,9 +94,9 @@ $$
 Then the derivative of the Gaussian kernel can be expressed as:
 
 $$
-\begin{align}
+\begin{align*}
 \frac{\partial G}{\partial \sigma} &= \sigma \left[ \frac{G(x,y,\sigma)}{\sigma^{2}} \left(\frac{x^2 + y^2}{\sigma^2} - 2\right) \right] = \sigma \nabla^{2}G 
-\end{align}
+\end{align*}
 $$
 
 **Scale-normalized LoG** is obtained by eliminating the $$\sigma^{-2}$$ term:
@@ -76,14 +109,34 @@ $$
 Using this, we can take the finite difference approximation using nearby scales $$\sigma$$ and $$k\sigma$$ to discover the relationship between **scale-normalized LoG** and **DoG**. 
 
 $$
-\begin{align}
+\begin{align*}
 \frac{\partial G}{\partial \sigma} =\sigma \nabla^{2}G \approx \frac{G(x,y,k\sigma) - G(x,y,\sigma)}{k\sigma - \sigma} \\
 \sigma \nabla^{2}G \approx \frac{G(x,y,k\sigma) - G(x,y,\sigma)}{\sigma(k - 1)} \\
+\end{align*} \\
+$$
+
+$$
+\begin{align}
 (k-1)\underbrace{\sigma^{2}\nabla^{2}G}_\textrm{Scale Norm LoG} \approx \underbrace{G(x,y,k\sigma) - G(x,y,\sigma)}_\textrm{DoG}
 \end{align}
 $$
 
 This shows that taking the difference between two Gaussians with scales differing by constant factor $$k$$, the $$\sigma^{2}$$ term required for **scale-normalized LoG** is automatically incorperated. Factor (k - 1) remains constant for every $$\sigma$$ which means that it will not influence extrema locality which is important for the following steps.
+
+{% highlight python %}
+def gen_DoGs(octave):
+    # Convert to grayscale before taking the difference
+    for i, scale in enumerate(octave):
+        octave[i] = cv.cvtColor(scale, cv.COLOR_BGR2GRAY)
+
+    DoGs = []
+    for i in range(len(octave ) - 1):
+        sub_img = octave[i + 1] - octave[i] # Equation (3)
+        DoGs.append(sub_img)
+
+    return DoGs
+{% endhighlight %}
+
 
 [![DoG.png](/content/cv/stitching/DoG.png)](/content/cv/stitching/DoG.png)
 ## **Local Extrema Detection**
@@ -93,6 +146,39 @@ This shows that taking the difference between two Gaussians with scales differin
 </p>
 
 Now that we have a good representation of regions with rapid changes in the image from DoG, we can locate the extrema and use them as a representation of keypoints in the image. For detecting extrema, points are sampled in the image and then compared to its eight neighbors in the current scale and nine neighbors in the previous scale and next scale. It is selected as a keypoint candidate if the value is greater than or less than all of its neighbors.
+
+{% highlight python %}
+def extrema_detection(DoGs, s_idx):
+    # Using neighboring scales
+    s_prev, s_curr, s_next = DoGs[s_idx - 1:s_idx + 2]
+
+    candidate_map = np.full_like(s_curr, fill_value=0)
+    pad = 1
+
+    # Reference for neighboring points
+    neighs = [
+        (i,j) for i in range(-pad, pad + 1)
+            for j in range(-pad, pad + 1) if i or j
+    ]
+    candidates = []
+
+    for i in range(pad, s_curr.shape[0] - pad):
+        for j in range(pad, s_curr.shape[1] - pad):
+            sample = s_curr[i, j]
+            for neigh in neighs:
+                ni, nj = neigh[0] + i, neigh[1] + j
+                maxima = sample > s_curr[ni, nj] \
+                    and sample > s_prev[ni, nj] and sample > s_next[ni, nj]
+                minima = sample < s_curr[ni, nj] \
+                    and sample < s_prev[ni, nj] and sample < s_next[ni, nj]
+                if not maxima and not minima:
+                    break
+            if maxima or minima:
+                candidate_map[i, j] = sample 
+                candidates.append((j, i, s_idx))
+
+    return candidate_map, candidates
+{% endhighlight %}
 
 [![extrema.png](/content/cv/stitching/extrema.png)](/content/cv/stitching/extrema.png)
 
@@ -115,7 +201,7 @@ Solving derivative for the Taylor expansion using <a href="http://www.gatsby.ucl
 
 $$
 \frac{\partial}{\partial \mathbf{z}} \bigg[D(\mathbf{z_i}) + \bigg(\frac{ \partial D}{\partial \mathbf z}\bigg)^T\mathbf z + \frac 1 2 \mathbf z^T\frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf z \bigg] \\
-\begin{align}
+\begin{align*}
 \\
 &= \frac{\partial}{\partial \mathbf{z}} D(\mathbf{z_i}) + \frac{\partial}{\partial \mathbf{z}}\bigg[\bigg(\frac{ \partial D}{\partial \mathbf z}\bigg)^T\mathbf z \bigg] + \frac 1 2 \frac{\partial}{\partial \mathbf{z}} \bigg[ \mathbf z^T\frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf z \bigg]\\
 
@@ -123,34 +209,126 @@ $$
 
 &= \frac{ \partial D}{\partial \mathbf z} + \frac 1 2 \bigg[ 2 \frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf z \bigg]\\
 &= \frac{ \partial D}{\partial \mathbf z} + \frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf z \\
-\end{align}
+\end{align*}
 $$
-
 
 Set it equal to **0** and solve for extremum $$\mathbf{\hat z}$$:
 
 $$
+\begin{align}
 \frac{ \partial D}{ \partial \mathbf z} + \frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf{\hat z} = 0 \quad \Rightarrow
 \frac{ \partial^2 D}{\partial \mathbf z^2} \mathbf{\hat z} = -\frac{ \partial D}{ \partial \mathbf z} \quad \Rightarrow
 \mathbf{\hat z} = -\frac{ \partial^2 D}{\partial \mathbf z^2}^{-1}\frac{ \partial D}{ \partial \mathbf z}
+\end{align}
 $$
 
-If $$\mathbf{\hat z}$$ is greater than **0.5** or less than **-0.5** for any dimension, then that indicates that the extremum lies outside the neighborhood of the sample so the candidate keypoint is discarded. Otherwise, add the offset $$\mathbf{\hat z}$$ to the candidate keypoint $$\mathbf{z_i}$$ to get the updated extremum $$\mathbf{z_i} + \mathbf{\hat z}$$. This process is done iteratively until the offset is valid. If its not valid by the final iteration, then it is discarded.
+{% highlight python %}
+def second_order_TE_inter(neigh):
+    # Compute first deriv (Gradient) in Taylor series on sample kp with
+    # adjacent pixels
+    dx = (neigh[1, 1, 2] - neigh[1, 1, 0]) / 2
+    dy = (neigh[1, 2, 1] - neigh[1, 0, 1]) / 2
+    ds = (neigh[2, 1, 1] - neigh[0, 1, 1]) / 2
+    grad = np.array([dx, dy, ds])
+
+    # Compute second deriv (Hessian) in Taylor series on sample kp with
+    # adjacent pixels
+    candidate = neigh[1, 1, 1]
+    dxx = neigh[1, 1, 2] - 2 * candidate + neigh[1, 1, 0]
+    dyy = neigh[1, 2, 1] - 2 * candidate + neigh[1, 0, 1]
+    dss = neigh[2, 1, 1] - 2 * candidate + neigh[0, 1, 1]
+    dxy = (neigh[1, 2, 2] - neigh[1, 2, 0] - neigh[1, 0, 2] + neigh[1, 0, 0]) / 4
+    dxs = (neigh[2, 1, 2] - neigh[2, 1, 0] - neigh[0, 1, 2] + neigh[0, 1, 0]) / 4
+    dys = (neigh[2, 2, 1] - neigh[2, 0, 1] - neigh[0, 2, 1] + neigh[0, 0, 1]) / 4
+    hess = np.array([
+        [dxx, dxy, dxs], 
+        [dxy, dyy, dys],
+        [dxs, dys, dss]
+    ])
+
+    # Avoid inverting singular matrix
+    if np.linalg.det(hess) == 0:
+        return np.zeros(shape=3), 0 
+
+    # Solve for extremum and get the contrast at that point
+    z_hat = -np.linalg.inv(hess).dot(grad)        # Equation (4)
+    contrast = candidate + grad.T.dot(z_hat) / 2  # Equation (5)
+
+    return z_hat, contrast
+{% endhighlight %}
+
 
 ### **Eliminating low contrast points**
 
+If $$\mathbf{\hat z}$$ is greater than **0.5** or less than **-0.5** for any dimension, then that indicates that the extremum lies outside the neighborhood of the sample so the candidate keypoint is discarded. Otherwise, add the offset $$\mathbf{\hat z}$$ to the candidate keypoint $$\mathbf{z_i}$$ to get the updated extremum $$\mathbf{z_i} + \mathbf{\hat z}$$. This process is done iteratively until the offset is valid. If its not valid by the final iteration, then it is discarded.
 We can substitute $$\mathbf z$$ in the Taylor expansion with $$\mathbf{\hat{z}}$$ to get the interpolated value at the localized extremum:
 
 $$
+\begin{align*}
+D(\mathbf{z_i}+\mathbf{\hat z}) = 
+D(\mathbf{z_i}) + \bigg(\frac{ \partial D}{\partial \mathbf z}\bigg)^T\bigg|_{\mathbf z=\mathbf z_i} \mathbf{\hat z} + \frac 1 2 \mathbf{\hat z}^T\frac{ \partial^2 D}{\partial \mathbf z^2}\bigg|_{\mathbf z=\mathbf z_i} \mathbf{\hat z} 
+\end{align*}
+$$
+
+$$
 \begin{align}
-D(\mathbf{z_i}+\mathbf{\hat z}) &= 
-D(\mathbf{z_i}) + \bigg(\frac{ \partial D}{\partial \mathbf z}\bigg)^T\bigg|_{\mathbf z=\mathbf z_i} \mathbf{\hat z} + \frac 1 2 \mathbf{\hat z}^T\frac{ \partial^2 D}{\partial \mathbf z^2}\bigg|_{\mathbf z=\mathbf z_i} \mathbf{\hat z} \\
-&= D(\mathbf{z_i}) + \frac 1 2 \bigg(\frac{ \partial D}{\partial \mathbf z}\bigg)^T\bigg|_{\mathbf z=\mathbf z_i} \mathbf{\hat z}
+= D(\mathbf{z_i}) + \frac 1 2 \bigg(\frac{ \partial D}{\partial \mathbf z}\bigg)^T\bigg|_{\mathbf z=\mathbf z_i} \mathbf{\hat z}
 \end{align}
 $$
 
 The value represents the contrast at that point. If \|$$D(\mathbf{z_i}+\mathbf{\hat z})$$\|$$< 0.03 $$, it is consider to be low contrast and discarded.
 
+{% highlight python %}
+def keypoint_inter(DoGs, cands, max_it=5, con_thresh=0.03):
+    refined = []
+
+    for cand in cands:
+        (x, y, s) = cand
+        in_neigh, outside = False, False
+
+        for i in range(max_it):
+            s_prev, s_curr, s_next = DoGs[s - 1:s + 2]
+            neighborhood = np.stack([
+                s_prev[y - 1:y + 2, x - 1:x + 2],
+                s_curr[y - 1:y + 2, x - 1:x + 2],
+                s_next[y - 1:y + 2, x - 1:x + 2],
+            ]).astype(np.float32) / 255
+
+            # calculate extremum in the second order Taylor expansion
+            offset, contrast = second_order_TE_inter(neighborhood)
+
+            in_neigh = abs(offset[0]) < 0.5 
+            in_neigh &= abs(offset[1]) < 0.5 
+            in_neigh &= abs(offset[2]) < 0.5 
+
+            # stop if the extremum is in the neighborhood
+            if in_neigh: break
+
+            # update extremum
+            x += int(round(offset[0]))
+            y += int(round(offset[1]))
+            s += int(round(offset[2]))
+
+            outside = (x < 1 or x >= s_curr.shape[1] - 1) 
+            outside |= (y < 1 or y >= s_curr.shape[0] - 1)
+            outside |= (s < 1 or s >= len(DoGs) - 1)
+
+            # discard if extremum is outside the image or scale-space
+            if outside: break
+
+        if not in_neigh or outside or abs(contrast) < con_thresh:
+            continue
+        else:
+            x += int(round(offset[0]))
+            y += int(round(offset[1]))
+            s += int(round(offset[2]))
+            refined.append((x, y, s, abs(contrast)))
+
+    refined_map = np.full_like(DoGs[0], fill_value=0)
+    for p in refined:
+        refined_map[p[1], p[0]] = p[3] * 255 
+    return refined_map, refined
+{% endhighlight %}
 
 [![contrast_ref.png](/content/cv/stitching/contrast_ref.png)](/content/cv/stitching/contrast_ref.png)
 
@@ -158,7 +336,7 @@ The red region shows some extrema that were discarded due to having low contrast
 
 ### **Eliminating edge responses**
 
-As you may have notice in the DoG images, the contours on my face and hat were easily discernible which means that it had a strong response along these edges and curves. Some of the points along the edges are coarsely located and easily influenced to small amounts of noise resulting in undesirable extrema.
+As you may have noticed in the DoG images, the contours on my face and hat were easily discernible which means that it had a strong response along these edges and curves. Some of the points along the edges are coarsely located and easily influenced to small amounts of noise resulting in undesirable extrema. This process will also eliminate other erroneous extremas with no structure.
 
 <p align="center">
     <a href="/content/cv/stitching/edges.png">
@@ -188,28 +366,212 @@ $$
 This relationship can also be expressed as:
 
 $$
+\begin{align}
 \frac {\text{Tr}(\mathbf{H})^2} {\text{Det}(\mathbf{H})} < \frac{(r+1)^2}{r}
 \quad \Rightarrow \quad r\text{Tr}(\mathbf{H})^2 < (r+1)^2\text{Det}(\mathbf{H})
+\end{align}
 $$
+
+{% highlight python %}
+def elim_edge_responses(DoGs, cands, r=10):
+    refined = []
+
+    for cand in cands:
+        (x, y, s, _) = cand
+        neigh = DoGs[s][y - 1:y + 2, x - 1:x + 2].astype(np.float32) / 255
+
+        dxx = neigh[1, 2] - 2 * neigh[1, 1] + neigh[1, 0]
+        dyy = neigh[2, 1] - 2 * neigh[1, 1] + neigh[0, 1]
+        dxy = (neigh[2, 2] - neigh[2, 0] - neigh[0, 2] + neigh[0, 0]) / 4
+
+        H = np.array([
+            [dxx, dxy],
+            [dxy, dyy]
+        ])
+        tr_H, det_H = np.trace(H), np.linalg.det(H)
+ 
+        lhs = r * (tr_H ** 2)         # Lefthand side of condition (6)
+        rhs = ((r + 1) ** 2) * det_H  # Righhand side of condition (6)
+
+        if lhs < rhs:
+            refined.append(cand)
+        
+    refined_map = np.full_like(DoGs[0], fill_value=0)
+    for p in refined:
+        refined_map[p[1], p[0]] = p[3] * 255
+    return refined_map, refined
+{% endhighlight %}
 
 [![elim_edge.png](/content/cv/stitching/elim_edge.png)](/content/cv/stitching/elim_edge.png)
 
-## **Keypoint Descriptor**
+<p align="center">
+  <img src="/content/cv/stitching/kp1.png" />
+</p>
 
-Now that we have robust kepoints from the image, we want to be able to assign them with a local coordinate system that remains invariant from different perspectives. SIFT assigns a keypoint with an orientation to provide rotation invariance. The local dominant gradient angle over a keypoint is used as a reference for the orientation, allowing for orientation normalization.
+The green dots are showing the keypoints from the second scale and red dots are from the thrid scale after refinement.
 
-**Orientation histogram accumulation**
-First, accumulate 
+### **Descriptor Orientation**
 
-**Smoothing the histogram**
+The descriptors are structured around a set of weighted histograms of the gradient orientation taken at the neighboring regions of the keypoint. The most dominant gradient orientation over a keypoint neighborhood is provided by the strongest gradient angle in the region and is selected as the reference orientation, allowing for rotation invariance for the resulting descriptor. The size of the region depends on the scale and octave that the keypoint was located in.
 
-### **Reference Orientation Extraction**
+For each keypoint, the gradient magnitude $$m$$ and the gradient angle $$\theta$$ are computed:
 
-### **Keypoint Normalized Descriptor**
+$$
+L(x,y,\sigma) = G(x,y,\sigma) \ast I(x,y) \\
+$$
 
-**Array of orientation histograms**
 
-**Patch Normalization**
+$$
+\begin{align}
+m(x,y) = \sqrt{(L(x+1,y)-L(x-1,y))^2 + (L(x,y+1)-L(x,y-1))^2} \\ 
+\end{align}
+$$
+
+$$
+\begin{align}
+\theta(x,y) = \arctan\left(\frac{ L(x,y+1)-L(x,y-1)}{L(x+1,y)-L(x-1,y)}\right)
+\end{align}
+$$
+
+<p align="center">
+  <img src="/content/cv/stitching/grad.png" />
+</p>
+
+The left image shows the patch of a sample keypoint from the green region below. The right image shows the gradient magnitudes represented by the color with their respective gradient angles.
+
+<p align="center">
+  <img src="/content/cv/stitching/sample_grad.png" />
+</p>
+
+
+SIFT accumulates the local distribution of the gradient angle within a region using a histogram composed of 36 bins for every 10 degrees in a full rotation (360 degrees). The amount added to a bin depends on the product of the gradient magnitude and the contribution weight at that particular point.  $$\lambda_{ori}$$ is used to adjust the reach of the distribution.
+
+$$
+\begin{align}
+\text{Contribution weight at (x,y):} \quad c_{x,y}^{ori} = \exp\left(\frac{-(x^2 + y^2)}{2(\lambda_{ori}\sigma)^2}\right) \\
+\end{align}
+$$
+
+$$
+\begin{align}
+\text{Bin index at (x,y):} \quad b_{x,y}^{ori} = \frac{\theta_{x,y} n_{bins}}{360}
+\end{align}
+$$
+
+{% highlight python %}
+N_BINS = 36         # number of bins in gradient histogram
+LAMBDA_ORI = 1.5    # scale the reach of the gradient distribution
+R = 3               # Radius of the gaussian window
+T = 0.80            # threshold for considering local maxima in the
+                    # gradient orientation histogram
+
+def gen_hist(kp, scale, octave, o_idx):
+    hist = np.zeros(N_BINS)
+    gauss_img = octave[int(kp.size)] / 255
+    shape = gauss_img.shape
+    rad = int(round(R * scale))
+
+    for y_shift in range(-rad, rad + 1):
+        y_r = int(round(kp.pt[1]) / float(2 ** o_idx)) + y_shift
+        if y_r < 1 or y_r >= shape[0] - 2:
+            continue
+        for x_shift in range(-rad, rad + 1):
+            x_r = int(round(kp.pt[0]) / float(2 ** o_idx)) + x_shift
+            if x_r < 1 or x_r >= shape[1] - 1:
+                continue
+            # compute gradient magnitudes and orientation from the current patch
+            dx = gauss_img[y_r, x_r + 1] - gauss_img[y_r, x_r - 1]
+            dy = gauss_img[y_r + 1, x_r] - gauss_img[y_r - 1, x_r]
+            mag = math.sqrt(dx ** 2 + dy ** 2)      # Equation (7)
+            ori = np.rad2deg(np.arctan2(dy, dx))    # Equation (8)
+
+            # compute sample contribution weight and bin index, then
+            # place in hist
+
+            # Equation (9)
+            con = np.exp(-(x_shift ** 2 + y_shift ** 2) / (2 * scale ** 2))
+            # Equation (10)
+            bin_idx = int(round(ori * N_BINS / 360.))
+            hist[bin_idx % N_BINS] += con * mag
+    
+    return hist
+{% endhighlight %}
+
+Smoothing the histogram by weighting nearby bins and averaging them.
+
+{% highlight python %}
+def smooth_hist(hist):
+    smooth = []
+
+    # Smoothing histogram by weighting nearby bins and averaging them
+    for i in range(N_BINS):
+        smooth_mag = 6 * hist[i] + 4 * (hist[i - 1] + hist[(i + 1) % N_BINS])
+        smooth_mag += hist[i - 2] + hist[(i + 2) % N_BINS]
+        smooth_mag /= 16.
+        smooth.append(smooth_mag)
+
+    return smooth 
+{% endhighlight %}
+
+After computing the smoothed histogram, the orientation with the greatest magnitude (peak) is selected as its reference orientation. Additionally, if any other orientation contains a magnitude that is greater than 80% of the peak, then a new keypoint gets created with the same location and is assigned that orientation instead.
+
+{% highlight python %}
+def compute_reference(kp, smooth):
+    max_ori = max(smooth)
+
+    # sample window
+    band = (smooth > np.roll(smooth, 1), smooth > np.roll(smooth, -1))
+    peaks = np.where(band[0] & band[1])[0]
+
+    ori_kps = []
+    # Extract the reference orientations
+    for p_idx in peaks:
+        p_val = smooth[p_idx]
+        if p_val < T * max_ori:
+            continue
+        l_val = smooth[(p_idx - 1) % N_BINS]
+        r_val = smooth[(p_idx + 1) % N_BINS]
+
+        # compute the reference index
+        norm_p_idx = p_idx + 0.5 * (l_val - r_val)
+        norm_p_idx /= l_val - 2 * p_val + r_val
+        norm_p_idx %= N_BINS
+
+        # compute the reference orientation
+        ori = 360. - norm_p_idx * 360. / N_BINS
+        ori_kp = cv.KeyPoint(*kp.pt, kp.size, ori, kp.response, kp.octave)
+        ori_kps.append(ori_kp)
+
+    return ori_kps
+{% endhighlight %}
+
+**All together**
+{% highlight python %}
+def compute_orientations(keypoints, octaves, o_idx, k):
+    octave = octaves[o_idx]
+    kps, hists = [], []
+
+    for kp in keypoints:
+        scale = LAMBDA_ORI * kp.size / (2 ** o_idx)
+
+        hist = gen_hist(kp, scale, octave, o_idx)
+        smooth = smooth_hist(hist)
+        ori_kps = compute_reference(kp, smooth)
+
+        kps += ori_kps
+        hists.append((hist, smooth))
+
+    return hists, kps
+{% endhighlight %}
+
+[![ori1.png](/content/cv/stitching/ori1.png)](/content/cv/stitching/ori1.png)
+
+The green bar shows the orientation that was selected for the feature descriptor and the red bars are the orientations that didn't pass the threshold.
+
+## **Descriptor Construction**
+<p align="center">
+  <img src="/content/cv/stitching/kp_desc.png" />
+</p>
 
 # **What's next?**
 Next, I'll be explaining how to match the feature keypoints gathered from using SIFT in order to stitch images together.

@@ -261,7 +261,7 @@ class NBC():
                     else:
                         vocab_class[class_type][word] = 1
             omitted_vocab = {
-                key : 0 for key, val in vocab_class[class_type].items() if val >= 5
+            key : 0 for key, val in vocab_class[class_type].items() if val >= 5
             }
             vocab_class[class_type] = omitted_vocab
 

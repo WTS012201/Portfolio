@@ -1,0 +1,37 @@
+---
+layout: post
+excerpt_separator: <!--more-->
+permalink: /blog/projects/tfi
+title: "Text From Image (TFI)"
+date: 2023-05-15
+category: 2
+image: /content/projects/tfi/tfi_img.png
+---
+
+Text from image (TFI) is an application for Linux that extracts text from an image and allows the user to modify the text in place. It features an interface for removing, grouping, editing, and moving text in an image.
+
+# Download
+
+**AUR git clone URL:** <a href="https://aur.archlinux.org/packages/tfi">https://aur.archlinux.org/tfi.git</a>
+
+**Git:** <a href="https://github.com/WTS012201/Text-From-Image">https://github.com/WTS012201/Text-From-Image</a>
+
+# **Demos**
+
+### Moving text around
+
+<video width="100%" preload="auto" controls muted>
+    <source src="{{include.src}}/content/projects/tfi/moving.mp4" type="video/mp4"/>
+</video>
+
+### Replacing text
+
+<video width="100%" preload="auto" controls muted>
+    <source src="{{include.src}}/content/projects/tfi/editing.mp4" type="video/mp4"/>
+</video>
+
+### Word search
+
+<video width="100%" preload="auto" controls muted>
+    <source src="{{include.src}}/content/projects/tfi/wordsearch.mp4" type="video/mp4"/>
+</video>

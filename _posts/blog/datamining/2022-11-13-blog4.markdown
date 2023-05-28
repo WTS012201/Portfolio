@@ -130,10 +130,25 @@ Scikit-learn offers GridSearchCV which is a useful tool for testing out differen
 
 {% highlight python %}
 hyperparams = [
-  {'C': [1, 10, 100, 1000], 'kernel': ['linear']},
-  {'C': [1, 10, 100, 1000], 'gamma': [1, 0.1, 0.01, 0.001, 0.0001], 'kernel': ['poly']},
-  {'C': [1, 10, 100, 1000], 'gamma': [1, 0.1, 0.01, 0.001, 0.0001], 'kernel': ['sigmoid']},
-  {'C': [1, 10, 100, 1000], 'gamma': [1, 0.1, 0.01, 0.001, 0.0001], 'kernel': ['rbf']},
+  {
+      'C': [1, 10, 100, 1000],
+      'kernel': ['linear']
+  },
+  {
+      'C': [1, 10, 100, 1000],
+      'gamma': [1, 0.1, 0.01, 0.001, 0.0001],
+      'kernel': ['poly']
+  },
+  {
+      'C': [1, 10, 100, 1000],
+      'gamma': [1, 0.1, 0.01, 0.001, 0.0001],
+      'kernel': ['sigmoid']
+  },
+  {
+      'C': [1, 10, 100, 1000],
+      'gamma': [1, 0.1, 0.01, 0.001, 0.0001],
+      'kernel': ['rbf']
+  },
 ]
 
 svc = svm.SVC(probability=True)
@@ -361,7 +376,8 @@ class ResNet152(nn.Module):
 
     def _gen_layer(self, n_res_blocks, out_channels, stride):
         layers = []
-        down_sample = ConvBlock(self.in_channels, out_channels * 4, 1, stride, 0)
+        down_sample = ConvBlock(
+            self.in_channels, out_channels * 4, 1, stride, 0)
 
         layers.append(
             ResBlock(self.in_channels, out_channels, down_sample, stride)
@@ -480,7 +496,9 @@ Notice that I normalized the dataset based on the values for each class rather t
 Showing the effects of normalization on an image.
 {% highlight python %}
 test_img, class_idx = train_data[np.random.randint(0, len(train_data))]
-imgs = [test_img.permute(1, 2, 0), unnorms[class_idx](test_img).permute(1, 2, 0)]
+imgs = [
+    test_img.permute(1, 2, 0), unnorms[class_idx](test_img).permute(1, 2, 0)
+]
 
 fig, axs = plt.subplots(1, 2, figsize=(20, 12))
 axs[0].set_title("Normalization", fontsize=24)
@@ -512,7 +530,8 @@ def run(norm):
         train_data, val_data = load_data(PATH, size, unnorms)
 
     model = ResNet152(len(classes), 3).to(device)
-    opt = optim.SGD(model.parameters(), lr=lr, weight_decay=0.0001, momentum=0.9)
+    opt = optim.SGD(
+        model.parameters(), lr=lr, weight_decay=0.0001, momentum=0.9)
     epoch_data = train(
         model,
         opt,
@@ -608,7 +627,6 @@ One thing I did not mention was the amount of time spent for training each. With
 
 An advantage that the SVM had was that it was easier to set up and toy around with whereas I struggled quite a bit when implementing the ResNet model. The downside is that it doesn't classify as well as ResNet.
 
-The video demo of the models is available <a href="https://www.youtube.com/watch?v=jsOPWQJau0Q">here</a>
 
 # **References**
 

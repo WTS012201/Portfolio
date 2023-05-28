@@ -1,0 +1,13 @@
+---
+layout: post
+excerpt_separator: <!--more-->
+permalink: /blog/projects/semseg
+title: "Semantic Segmentation for Autonomous Vehicles"
+date: 2023-05-15
+category: 2
+image: /content/projects/sem-seg/featured.png
+---
+
+**Paper:** [IEEE_Conference_Template.pdf](/content/projects/sem-seg/IEEE_Conference_Template.pdf)
+
+**Jupyter notebook:**<a href="https://github.com/WTS012201/CompVis/blob/main/SemSeg/unet.ipynb"> unet.ipynb</a>

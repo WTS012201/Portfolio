@@ -3,45 +3,109 @@ layout: default
 ---
 
 <div class="home">
- {{ content }}
-  {%- if site.posts.size > 0 -%}
-  <h2 class="post-list-heading" style="font-weight: bold">Concepts in Computer Vision</h2>
-  <div style="display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 15px; row-gap: 15px; margin-bottom: 40px;">
-    {%- for post in site.posts -%}
-      {%- if post.category == 1 -%}
-        <div style="box-shadow: rgba(0, 0, 0, 0.24) 3px 3px 8px 3px; border-radius: 10px;">
-          <a class="post-link" href="{{ post.url | relative_url }}" style="text-align: center; padding: 0px 10px">
-            <div style="height: 250px; display: flex; align-items: center; border-bottom: 1px solid rgb(224, 224, 224); overflow: hidden; padding: 2px">
-              <img src="{{ site.baseurl }}{{ post.image }}" \>
-            </div>
-            <div style="display: flex; justify-content: center; align-items: center; height: 150px; width: 100%; color: black;">
-              <span>
-                {{ post.title | escape }}
-              </span>
-            </div>
-          </a>
+  {{ content }} {%- if site.posts.size > 0 -%}
+  <h2 class="post-list-heading" style="font-weight: bold">
+    Concepts in Computer Vision
+  </h2>
+  <div
+    style="
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: 15px;
+      row-gap: 15px;
+      margin-bottom: 40px;
+    "
+  >
+    {%- for post in site.posts -%} {%- if post.category == 1 -%}
+    <div
+      style="
+        box-shadow: rgba(0, 0, 0, 0.24) 3px 3px 8px 3px;
+        border-radius: 10px;
+      "
+    >
+      <a
+        class="post-link"
+        href="{{ post.url | relative_url }}"
+        style="text-align: center; padding: 0px 10px"
+      >
+        <div
+          style="
+            height: 250px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgb(224, 224, 224);
+            overflow: hidden;
+            padding: 2px;
+          "
+        >
+          <img src="{{ site.baseurl }}{{ post.image }}" \ />
         </div>
-      {%- endif -%}
-    {%- endfor -%}
+        <div
+          style="
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 150px;
+            width: 100%;
+            color: black;
+          "
+        >
+          <span> {{ post.title | escape }} </span>
+        </div>
+      </a>
+    </div>
+    {%- endif -%} {%- endfor -%}
   </div>
-  <h2 class="post-list-heading" style="font-weight: bold">CSE 4334 Data Mining Kaggle Assignments</h2>
-  <div style="display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 15px; row-gap: 15px;">
-    {%- for post in site.posts -%}
-      {%- if post.category == 0 -%}
-        <div style="box-shadow: rgba(0, 0, 0, 0.24) 3px 3px 8px 3px; border-radius: 10px;">
-          <a class="post-link" href="{{ post.url | relative_url }}" style="text-align: center; padding: 0px 10px">
-            <div style="height: 250px; display: flex; align-items: center; border-bottom: 1px solid rgb(224, 224, 224); overflow: hidden; padding: 2px">
-              <img src="{{ site.baseurl }}{{ post.image }}" \>
-            </div>
-            <div style="display: flex; justify-content: center; align-items: center; height: 150px; width: 100%; color: black; ">
-              <span>
-                {{ post.title | escape }}
-              </span>
-            </div>
-          </a>
+  <h2 class="post-list-heading" style="font-weight: bold">
+    CSE 4334 Data Mining Kaggle Assignments
+  </h2>
+  <div
+    style="
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: 15px;
+      row-gap: 15px;
+    "
+  >
+    {%- for post in site.posts -%} {%- if post.category == 0 -%}
+    <div
+      style="
+        box-shadow: rgba(0, 0, 0, 0.24) 3px 3px 8px 3px;
+        border-radius: 10px;
+      "
+    >
+      <a
+        class="post-link"
+        href="{{ post.url | relative_url }}"
+        style="text-align: center; padding: 0px 10px"
+      >
+        <div
+          style="
+            height: 250px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgb(224, 224, 224);
+            overflow: hidden;
+            padding: 2px;
+          "
+        >
+          <img src="{{ site.baseurl }}{{ post.image }}" \ />
         </div>
-      {%- endif -%}
-    {%- endfor -%}
+        <div
+          style="
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 150px;
+            width: 100%;
+            color: black;
+          "
+        >
+          <span> {{ post.title | escape }} </span>
+        </div>
+      </a>
+    </div>
+    {%- endif -%} {%- endfor -%}
   </div>
   {%- endif -%}
 </div>

@@ -1,5 +1,5 @@
 title: Will's Home Page
-email: wts012201@gmail.com
+email: wiltsig@gmail.com
 
 # description: >- # this means to ignore newlines until "baseurl:"
 #   Write an awesome description for your new site here. You can edit this
@@ -13,8 +13,8 @@ show_excerpts: true
 excerpt_ separator: <!--more-->
 future: true
 # Build settings
-# theme: minima
-remote_theme: jekyll/minima
+theme: minima
+# remote_theme: jekyll/minima
 plugins:
   - jekyll-feed
   - jekyll-remote-theme
@@ -24,7 +24,6 @@ markdown: kramdown
 kramdown:
   input: GFM
   syntax_highlighter: rouge
-
 # gems: ['jekyll/scholar']
 # scholar:
 #   style: apa

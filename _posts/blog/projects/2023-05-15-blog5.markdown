@@ -1,0 +1,19 @@
+---
+layout: post
+excerpt_separator: <!--more-->
+permalink: /blog/projects/lolbot
+title: "LoL Bot"
+date: 2023-05-15
+category: 2
+image: /content/projects/lolbot/featured.png
+---
+
+A League of Legends bot that functions purely off of visuals. This is incomplete and is something I work on periodically with free time.
+
+Currently, I have the data extraction from image frames and input/ouput features implemented.
+
+### Some Sample Footage
+
+<video width="100%" preload="auto" controls muted>
+    <source src="{{include.src}}/content/projects/lolbot/output.mp4" type="video/mp4"/>
+</video>

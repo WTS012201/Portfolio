@@ -1,0 +1,37 @@
+---
+layout: post
+excerpt_separator: <!--more-->
+permalink: /blog/projects/fat-app
+title: "Fitness and Training App "
+date: 2023-05-15
+category: 2
+image: /content/projects/fat/dumbbell.png
+---
+
+A Minimalistic fitness application that features a calendar to log information regarding user workout information and provide statistics
+
+# **Demos**
+
+<div align="center">
+    <div style="padding-bottom: 25px; padding-top: 25px;">
+        <div style="font-size: 40px;">Creating & Editing workouts</div>
+        <video style="border-radius: 10px;" width="100%" preload="auto" controls muted>
+            <source src="{{include.src}}/content/projects/fat/workouts.mp4" type="video/mp4"/>
+        </video>
+    </div>
+    <div style="padding-bottom: 25px; padding-top: 25px;">
+        <div style="font-size: 40px;">Viewing workouts</div>
+        <video style="border-radius: 10px;" width="100%" preload="auto" controls muted>
+            <source src="{{include.src}}/content/projects/fat/modify.mp4" type="video/mp4"/>
+        </video>
+    </div>
+    <div style="padding-bottom: 25px; padding-top: 25px;">
+        <div style="font-size: 40px;">Creating Meals</div>
+        <video style="border-radius: 10px;" width="100%" preload="auto" controls muted>
+            <source src="{{include.src}}/content/projects/fat/meals.mp4" type="video/mp4"/>
+        </video>
+    </div>
+
+</div>
+
+<a href="https://github.com/WTS012200/FAT-App">Source code</a>

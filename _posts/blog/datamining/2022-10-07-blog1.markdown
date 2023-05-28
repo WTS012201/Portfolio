@@ -69,12 +69,14 @@ for i, dl in enumerate(data_list):
         data_list[i].Sex = dl.Sex.apply(lambda sex: 0 if sex == "male" else 1)
 all_data = pd.concat(data_list)
 
-missing_vals = [all_data[col].isnull().sum() for col in all_data.columns.to_list()]
+missing_vals = [
+    all_data[col].isnull().sum() for col in all_data.columns.to_list()]
 labels = all_data.columns.to_list()
 ser = pd.Series(data=missing_vals, index=labels, name="by amount")
 ser_missing = ser[ser > 0].drop("Survived", axis=0)
 
-percentages = ser_missing.apply(lambda x: "%.2f " % (x * 100 / all_data.shape[0]))
+percentages = ser_missing.apply(
+    lambda x: "%.2f " % (x * 100 / all_data.shape[0]))
 percentages.name = "by percent"
 print(f"Total number of rows: {all_data.shape[0]}\n\n{ser_missing} \
         \n\n{percentages}")
@@ -141,7 +143,8 @@ Cabin     0.205097  1.000000
 
 {% highlight python %}
 train_data_copy = train_data.copy()
-train_data_copy["Cabin"] = train_data_copy["Cabin"].astype('category').cat.codes
+train_data_copy["Cabin"] = train_data_copy["Cabin"].astype(
+    'category').cat.codes
 group_survive = train_data_copy.groupby("Cabin")["Survived"].sum()
 goup_count = train_data_copy.groupby("Cabin")["Survived"].count()
 
@@ -194,7 +197,8 @@ for i in all_data[all_data["Cabin"] == -1].index:
     Pclass = all_data.iloc[i].Pclass
     all_data.loc[i, "Cabin"] = 0 if Pclass == 1 else 1
 
-missing_vals = [all_data[col].isnull().sum() for col in all_data.columns.to_list()]
+missing_vals = [
+    all_data[col].isnull().sum() for col in all_data.columns.to_list()]
 labels = all_data.columns.to_list()
 ser = pd.Series(
     data=missing_vals, index=labels, name="by amount").drop(
@@ -231,12 +235,17 @@ def train(features):
     X_test = pd.get_dummies(test_data[features])
 
 
-    model = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=1)
+    model = RandomForestClassifier(
+        n_estimators=100, max_depth=5, random_state=1)
     model.fit(X, y)
     predictions = model.predict(X_test)
 
     output = pd.DataFrame(
-        {'PassengerId': test_data.PassengerId, 'Survived': predictions.astype(int)})
+        {
+            'PassengerId': test_data.PassengerId,
+            'Survived': predictions.astype(int)
+        }
+    )
     output.to_csv('new_submission.csv', index=False)
 {% endhighlight %}
 

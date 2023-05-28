@@ -1,0 +1,39 @@
+---
+layout: post
+excerpt_separator: <!--more-->
+permalink: /blog/projects/fishquest
+title: "Fish Quest App"
+date: 2023-05-15
+category: 2
+image: /content/projects/fish-quest/icon.png
+---
+
+**App description:**
+
+There are several existing fishing applications on the market that serves their own unique purpose like a catch logger or a fishing location finder, but none of these applications alone satisfy every fishing need that an angler has. FishQuest addresses this issue by providing a complete and versatile fishing platform that combine features like a catch logger, social media features, and a missions and reward system. Social media is an important aspect of FishQuest because it allows the fishing community to stay interconnected. Many mainstream social media platforms like Instagram, TikTok, and Facebook exist but are not meant for fishing since they support content from all genres and dilute content related to fishing. With FishQuest, users will be able to enjoy a social media experience that is exclusive to only fishing content. The missions and reward system is also an important aspect that makes fishing more exciting. In the past, popular mobile games such as Pokemon Go rose to fame because of in game mechanics that encourage users to explore the world and compete against one another. FishQuest takes inspiration from this game design to provide users with more incentive to go out and fish.
+
+
+# **Demos**
+
+<div align="center">
+    <div style="padding-bottom: 25px; padding-top: 25px;">
+        <div style="font-size: 40px;">Submitting a catch</div>
+        <video style="border-radius: 10px;" width="50%" preload="auto" controls muted>
+            <source src="{{include.src}}/content/projects/fish-quest/submit_catch.mp4" type="video/mp4"/>
+        </video>
+    </div>
+    <div style="padding-bottom: 25px; padding-top: 25px;">
+        <div style="font-size: 40px;">Posts</div>
+        <video style="border-radius: 10px;" width="50%" preload="auto" controls muted>
+            <source src="{{include.src}}/content/projects/fish-quest/profile.mp4" type="video/mp4"/>
+        </video>
+    </div>
+    <div style="padding-bottom: 25px; padding-top: 25px;">
+        <div style="font-size: 40px;">Map</div>
+        <video style="border-radius: 10px;" width="50%" preload="auto" controls muted>
+            <source src="{{include.src}}/content/projects/fish-quest/map.mp4" type="video/mp4"/>
+        </video>
+    </div>
+</div>
+
+The app is not available for download but feel free to try it out with Expo. <a href="https://github.com/KPHAN7878/FishQuest">Source code</a>

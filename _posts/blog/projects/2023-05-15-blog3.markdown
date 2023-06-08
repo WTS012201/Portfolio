@@ -34,4 +34,4 @@ A Minimalistic fitness application that features a calendar to log information r
 
 </div>
 
-<a href="https://github.com/WTS012200/FAT-App">Source code</a>
+<a href="https://github.com/WTS012201/FAT-App">Source code</a>

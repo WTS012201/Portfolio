@@ -484,7 +484,7 @@ def gen_hist(kp, scale, octave, o_idx):
     hist = np.zeros(N_BINS)
     gauss_img = octave[int(kp.size)] / 255
     shape = gauss_img.shape
-    rad = int(round(R \* scale))
+    rad = int(round(R * scale))
 
     for y_shift in range(-rad, rad + 1):
         y_r = int(round(kp.pt[1]) / float(2 ** o_idx)) + y_shift
